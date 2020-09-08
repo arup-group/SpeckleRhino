@@ -15,13 +15,13 @@ using System.Linq;
 
 namespace SpeckleGrasshopper
 {
-  public class QuerySpeckleObjectComponent : GH_Component, IGH_VariableParameterComponent
+  public class QuerySpeckleObjectComponent_OBSOLETE : GH_Component, IGH_VariableParameterComponent
   {
     HashSet<string> properties;
     /// <summary>
     /// Initializes a new instance of the MyComponent1 class.
     /// </summary>
-    public QuerySpeckleObjectComponent()
+    public QuerySpeckleObjectComponent_OBSOLETE()
       : base("Querry Speckle Object", "GNV",
           "Gets a value from a dictionary by string of concatenated keys. \n For example, 'prop.subprop.subsubprop'.",
           "Speckle", "Special")
