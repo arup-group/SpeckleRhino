@@ -70,76 +70,24 @@ namespace SpeckleGrasshopper
       string[] keySplit = key.Split('.');
       var propertyDict = speckleObject.Properties;
 
-      var topLevelObj = propertyDict[keySplit[0]];
-
-      if (topLevelObj is Dictionary<string, object>)
-      {
-        DA.SetData(0, propertyDict[keySplit[1]]);
-        return;
-      }
-      else
+      try
       {
         if (propertyDict.ContainsKey(keySplit[0]))
         {
-          DA.SetData(0, propertyDict[keySplit[0]]);
-          return;
+          var output = GetNestedProp(propertyDict, keySplit, 0);
+          DA.SetData(0, output);
         }
         else
         {
-          try
-          {
-            var output = speckleObject.GetType().GetProperty(keySplit[0]).GetValue(speckleObject, null);
-            DA.SetData(0, output);
-          }
-          catch (System.NullReferenceException e)
-          {
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find a parameter with that key on the input object");
-          }
+          var output = GetNestedProp(speckleObject, keySplit, 0);
+          //var output = speckleObject.GetType().GetProperty(keySplit[0]).GetValue(speckleObject, null);
+          DA.SetData(0, output);
         }
-
       }
-
-
-      
-
-
-      /// Use first part of path[Turtle] to execute existing logic to return the top-level object
-      //if (propertyDict.ContainsKey(keySplit[0]))
-      //{
-      //  var topLevelObj = propertyDict[keySplit[0]];
-
-      //  /// Check if the object is a Dictionary<string, object>
-      //  if (topLevelObj is Dictionary<string, object>)
-      //  {
-      //    /// If so use second part of path [smallTurtle] to access the relevant key-value pair
-      //    DA.SetData(0, propertyDict[keySplit[1]]);
-      //    return;
-      //  }
-      //  else
-      //  {
-      //    /// Else use reflection to check if the object has the second part of the path as a property
-      //    var output = speckleObject.GetType().GetProperty(keySplit[0]).GetValue(speckleObject, null);
-      //    DA.SetData(0, output);
-      //  }
-
-      //}
-      //else
-      //{
-      //  try
-      //  {
-      //    var output = speckleObject.GetType().GetProperty(keySplit[0]).GetValue(speckleObject, null);
-      //    DA.SetData(0, output);
-      //  }
-      //  catch (System.NullReferenceException e)
-      //  {
-      //    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find a parameter with that key on the input object");
-      //  }
-      //}
-
-      /// Repeat until no more path parts exist
-      /// Return retrieved object to user
-
-
+      catch (System.NullReferenceException e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find a parameter with that key on the input object");
+      }
     }
 
     /// <summary>
@@ -160,5 +108,32 @@ namespace SpeckleGrasshopper
     {
       get { return new Guid("{5AA1F56B-3174-4A4F-AB79-4B39E21D2BD5}"); }
     }
+
+    private object GetNestedProp(object property, string[] keySplit, int keyIndex)
+    {
+      object subProperty;
+      if (property is Dictionary<string, object> dictProperty)
+      {
+        subProperty = dictProperty[keySplit[keyIndex]];
+      }
+      else
+      {
+        subProperty = property.GetType().GetProperty(keySplit[keyIndex]).GetValue(property, null);
+      }
+      if (keyIndex == keySplit.Length - 1)
+      {
+        return subProperty;
+      }
+      else
+      {
+        return GetNestedProp(subProperty, keySplit, keyIndex++);
+      }
+
+    }
+
   }
+
+
 }
+
+
