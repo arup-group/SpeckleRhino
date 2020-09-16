@@ -112,7 +112,7 @@ namespace SpeckleGrasshopper
     private object GetNestedProp(object property, string[] keySplit, int keyIndex)
     {
       object subProperty;
-      if (property is Dictionary<string, object> dictProperty)
+      if (property is IDictionary<string, object> dictProperty)
       {
         subProperty = dictProperty[keySplit[keyIndex]];
       }
