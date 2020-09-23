@@ -72,21 +72,12 @@ namespace SpeckleGrasshopper
 
       try
       {
-        //if (propertyDict.ContainsKey(keySplit[0]))
-        //{
-          //var output = GetNestedProp(propertyDict, keySplit, 0);
-          //DA.SetData(0, output);
-        //}
-        //else
-        //{
-          var output = GetNestedProp(speckleObject, keySplit, 0);
-          //var output = speckleObject.GetType().GetProperty(keySplit[0]).GetValue(speckleObject, null);
-          DA.SetData(0, output);
-        //}
+        var output = GetNestedProp(speckleObject, keySplit, 0);
+        DA.SetData(0, output);
       }
       catch (System.NullReferenceException e)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find a parameter with that key on the input object");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find a parameter with the key, " + key + ", on the input object");
       }
     }
 
