@@ -112,15 +112,9 @@ namespace SpeckleGrasshopper
     private object GetNestedProp(object property, string[] keySplit, int keyIndex)
     {
       object subProperty;
-      if (property is ArchivableDictionary dictProperty)
+      if (property is IDictionary<string, object> dictProperty)
       {
         subProperty = dictProperty[keySplit[keyIndex]];
-        System.Diagnostics.Debug.WriteLine($"<{keySplit[keyIndex]}>");
-        System.Diagnostics.Debug.WriteLine($"<{dictProperty.Keys}>");
-
-        //subProperty = dictProperty.GetDictionary([keySplit[keyIndex]]);
-        //ArchivableDictionary subProperty1 = dictProperty[keySplit[keyIndex]].Values;
-        //ArchivableDictionary subProperty2 = subProperty1.Values;
       }
       else
       {
@@ -132,7 +126,8 @@ namespace SpeckleGrasshopper
       }
       else
       {
-        return GetNestedProp(subProperty, keySplit, keyIndex++);
+        var newKeyIndex = keyIndex + 1;
+        return GetNestedProp(subProperty, keySplit, newKeyIndex);
       }
 
     }
