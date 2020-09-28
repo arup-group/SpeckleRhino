@@ -27,11 +27,11 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.2
         
       - name: nuget restore
-        run: nuget restore SpeckleGrasshopper/SpeckleGrasshopper.csproj
+        run: nuget restore SpeckleRhino.sln
         
       - name: setup-msbuild
         uses: microsoft/setup-msbuild@v1.0.1
         
       - name: msbuild 
-        run: msbuild SpeckleGrasshopper/SpeckleGrasshopper.csproj -p:Configuration=Release
+        run: msbuild SpeckleRhino.sln -p:Configuration=Release
         
