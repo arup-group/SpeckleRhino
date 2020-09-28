@@ -43,11 +43,14 @@ jobs:
       - name: msbuild 
         run: msbuild SpeckleRhino.sln -p:Configuration=Release
         
+      - name: zip
+        run: zip SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha
+        
       - name: upload artifact
         uses: actions/upload-artifact@v2.1.4
         with:
           name: SpeckleGrasshopper-cx
-          path: SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha
+          path: SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip
         
   publish:
     runs-on: ubuntu-latest
