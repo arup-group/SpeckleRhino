@@ -29,14 +29,8 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v1.4.3
         
-      - name: move to SpeckleView
-        run: cd SpeckleView
-        
       - name: build SpeckleView
-        run: npm run build
-        
-      - name: move back up
-        run: cd ..
+        run: cd SpeckleView; npm run build
         
       - name: Setup NuGet.exe for use with actions
         uses: NuGet/setup-nuget@v1.0.2
