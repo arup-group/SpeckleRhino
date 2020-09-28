@@ -54,25 +54,19 @@ jobs:
     needs: build
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     steps:  
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./SpeckleGrasshopper-cx.zip
-          asset_name: SpeckleGrasshopper-cx.zip
-          asset_content_type: application/zip          
+        - name: Download a Build Artifact
+          uses: actions/download-artifact@v2.0.5
+          with:
+            name: SpeckleGrasshopper-cx
+        
+        - name: Upload Release Asset
+          id: upload-release-asset 
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ github.event.release.upload_url }}
+            asset_path: ./SpeckleGrasshopper-cx.zip
+            asset_name: SpeckleGrasshopper-cx.zip
+            asset_content_type: application/zip
       
