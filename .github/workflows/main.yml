@@ -44,7 +44,7 @@ jobs:
         run: msbuild SpeckleRhino.sln -p:Configuration=Release
         
       - name: zip
-        run: zip SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha
+        run: Compress-Archive -DestinationPath SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip -Path SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha
         
       - name: upload artifact
         uses: actions/upload-artifact@v2.1.4
