@@ -32,5 +32,6 @@ jobs:
       - name: setup-msbuild
         uses: microsoft/setup-msbuild@v1.0.1
         
-      - name: msbuild SpeckleGrasshopper/SpeckleGrasshopper.csproj -p:Configuration=Release
+      - name: msbuild 
+        run: msbuild SpeckleGrasshopper/SpeckleGrasshopper.csproj -p:Configuration=Release
         
