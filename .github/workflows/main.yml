@@ -26,6 +26,18 @@ jobs:
       - name: init SpeckleView
         run: git submodule update --init
         
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.3
+        
+      - name: move to SpeckleView
+        run: cd SpeckleView
+        
+      - name: build SpeckleView
+        run: npm run build
+        
+      - name: move back up
+        run: cd ..
+        
       - name: Setup NuGet.exe for use with actions
         uses: NuGet/setup-nuget@v1.0.2
         
