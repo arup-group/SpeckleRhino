@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-node@v1.4.3
         
       - name: build SpeckleView
-        run: cd SpeckleView; npm run build
+        run: cd SpeckleView; npm install; npm run build
         
       - name: Setup NuGet.exe for use with actions
         uses: NuGet/setup-nuget@v1.0.2
