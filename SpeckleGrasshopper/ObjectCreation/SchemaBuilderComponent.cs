@@ -349,7 +349,7 @@ namespace SpeckleGrasshopper.UserDataUtils
 
           if (innerValue == null) continue;
 
-          if (Params.Input[i].Name.Contains("Ref"))
+          if (Params.Input[i].Name.EndsWith("Ref"))
           {
             if (innerValue is SpeckleCore.SpeckleObject speckleObject)
             {
