@@ -53,13 +53,13 @@ jobs:
           path: SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip
           
       - name: zip rhp
-        run: Compress-Archive -DestinationPath SpeckleRhinoPlugin/bin/Release/SpeckleWinR6-cx.zip -Path SpeckleRhinoPlugin/bin/Release/SpeckleWinR6.rhp
+        run: Compress-Archive -DestinationPath SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip -Path SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6.rhp
         
       - name: upload rhp
         uses: actions/upload-artifact@v2.1.4
         with:
           name: SpeckleWinR6-cx
-          path: SpeckleRhinoPlugin/bin/Release/SpeckleWinR6-cx.zip
+          path: SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip
         
   publish:
     runs-on: ubuntu-latest
