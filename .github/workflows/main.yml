@@ -105,3 +105,4 @@ jobs:
             upload_url: ${{ steps.get_release.outputs.upload_url }}
             asset_path: ${{ steps.download_rhi.outputs.download-path }}/SpeckleWinR6-cx.rhi
             asset_name: SpeckleWinR6-cx.rhi
+            asset_content_type: application/zip # thats what the rhi is under the hood
