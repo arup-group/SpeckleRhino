@@ -43,14 +43,23 @@ jobs:
       - name: msbuild 
         run: msbuild SpeckleRhino.sln -p:Configuration=Release
         
-      - name: zip
+      - name: zip gha
         run: Compress-Archive -DestinationPath SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip -Path SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha
         
-      - name: upload artifact
+      - name: upload gha
         uses: actions/upload-artifact@v2.1.4
         with:
           name: SpeckleGrasshopper-cx
           path: SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.zip
+          
+      - name: zip rhp
+        run: Compress-Archive -DestinationPath SpeckleRhinoPlugin/bin/Release/SpeckleWinR6-cx.zip -Path SpeckleRhinoPlugin/bin/Release/SpeckleWinR6.rhp
+        
+      - name: upload rhp
+        uses: actions/upload-artifact@v2.1.4
+        with:
+          name: SpeckleWinR6-cx
+          path: SpeckleRhinoPlugin/bin/Release/SpeckleWinR6-cx.zip
         
   publish:
     runs-on: ubuntu-latest
@@ -63,20 +72,35 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ github.token }}
         
-        - name: Download a Build Artifact
-          id: download
+        - name: Download gha
+          id: download_gha
           uses: actions/download-artifact@v2.0.5
           with:
             name: SpeckleGrasshopper-cx
         
-        - name: Upload Release Asset
-          id: upload-release-asset 
+        - name: Upload gha
           uses: actions/upload-release-asset@v1
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             upload_url: ${{ steps.get_release.outputs.upload_url }}
-            asset_path: ${{ steps.download.outputs.download-path }}/SpeckleGrasshopper-cx.zip
+            asset_path: ${{ steps.download_gha.outputs.download-path }}/SpeckleGrasshopper-cx.zip
             asset_name: SpeckleGrasshopper-cx.zip
+            asset_content_type: application/zip
+            
+        - name: Download rhp
+          id: download_rhp
+          uses: actions/download-artifact@v2.0.5
+          with:
+            name: SpeckleWinR6-cx
+        
+        - name: Upload rhp 
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.get_release.outputs.upload_url }}
+            asset_path: ${{ steps.download_rhp.outputs.download-path }}/SpeckleWinR6-cx.zip
+            asset_name: SpeckleWinR6-cx.zip
             asset_content_type: application/zip
       
