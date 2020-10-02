@@ -349,6 +349,16 @@ namespace SpeckleGrasshopper.UserDataUtils
 
           if (innerValue == null) continue;
 
+          if (Params.Input[i].Name.EndsWith("Ref"))
+          {
+            if (innerValue is SpeckleCore.SpeckleObject speckleObject)
+            {
+              string key = "ApplicationId";
+
+              innerValue = speckleObject.GetType().GetProperty(key).GetValue(speckleObject, null);
+            }
+          }
+
           PropertyInfo prop = outputObject.GetType().GetProperty(Params.Input[i].Name);
           if (prop.PropertyType.IsEnum)
           {
