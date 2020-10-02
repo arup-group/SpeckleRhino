@@ -28,6 +28,8 @@ namespace SpeckleGrasshopper
     {
     }
 
+    /*the graft option needs to be set in a DataMapping property of the GH_Param when being added to the component.*/
+
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
@@ -40,6 +42,9 @@ namespace SpeckleGrasshopper
     {
       pManager.AddParameter(new SpeckleObjectParameter(), "Speckle Object", "SO", "The Speckle Object you want to query", GH_ParamAccess.item);
       pManager.AddTextParameter("Path", "P", "Path of desired property, separated by dots.\nExample:'turtle.smallerTurtle.microTurtle'", GH_ParamAccess.item);
+      //pManager.AddParameter(GH_Param<SpeckleObject>());
+      //GH_Param<T> graftTest = graftTest.DataMapping;
+      //GH_Param<string> graftTest;
     }
 
     /// <summary>
