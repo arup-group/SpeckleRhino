@@ -376,6 +376,16 @@ namespace SpeckleGrasshopper.UserDataUtils
             }
             catch { }
 
+            try
+            {
+              if ((prop.PropertyType == double) && (innerValue.GetType() == String))
+              {
+                System.Diagnostics.Debug.WriteLine(prop.PropertyType);
+
+              }
+            }
+            catch { }
+
             this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + Params.Input[i].Name + ".");
           }
 
