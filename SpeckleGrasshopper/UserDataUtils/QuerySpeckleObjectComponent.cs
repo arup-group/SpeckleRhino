@@ -22,7 +22,7 @@ namespace SpeckleGrasshopper
     /// Initializes a new instance of the MyComponent1 class.
     /// </summary>
     public QuerySpeckleObjectComponent()
-      : base("Querry Speckle Object", "GNV",
+      : base("Querry Speckle Object", "QSO",
           "Gets a value from a dictionary by string of concatenated keys. \n For example, 'prop.subprop.subsubprop'.",
           "Speckle", "Special")
     {
