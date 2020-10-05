@@ -42,9 +42,7 @@ namespace SpeckleGrasshopper
     {
       pManager.AddParameter(new SpeckleObjectParameter(), "Speckle Object", "SO", "The Speckle Object you want to query", GH_ParamAccess.item);
       pManager.AddTextParameter("Path", "P", "Path of desired property, separated by dots.\nExample:'turtle.smallerTurtle.microTurtle'", GH_ParamAccess.item);
-      //pManager.AddParameter(GH_Param<SpeckleObject>());
-      //GH_Param<T> graftTest = graftTest.DataMapping;
-      //GH_Param<string> graftTest;
+      pManager[0].DataMapping = GH_DataMapping.Graft;
     }
 
     /// <summary>
