@@ -506,7 +506,7 @@ namespace SpeckleGrasshopper
 
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {
-      pManager.AddGenericParameter( "ProjectID", "P", "P is for ProjectID!", GH_ParamAccess.item );
+      pManager.AddGenericParameter( "Project", "P", "Optional input for either a Project type (get it from ListMyProject component) or a string for the ProjectId", GH_ParamAccess.tree );
       pManager[ 0 ].Optional = true;
       pManager.AddGenericParameter( "B", "B", "B is for Book", GH_ParamAccess.tree );
       pManager[ 1 ].Optional = true;
@@ -918,10 +918,17 @@ namespace SpeckleGrasshopper
         })
         .ContinueWith(y => 
         {
-          if (project != null && !project.Streams.Contains(Client.StreamId))
+          if (project != null )
           {
+            if(!project.Streams.Contains(Client.StreamId))
+            {
               project.Streams.Add(Client.StreamId);
               Client.ProjectUpdateAsync(project._id, project); 
+            }
+            else
+            {
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Stream is already part of the project!");
+            }
           }
           else if (projectId != "")
           {
