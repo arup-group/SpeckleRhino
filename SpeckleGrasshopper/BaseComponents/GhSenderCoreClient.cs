@@ -503,7 +503,7 @@ namespace SpeckleGrasshopper
 
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {
-      pManager.AddGenericParameter( "A", "A", "A is for Apple", GH_ParamAccess.tree );
+      pManager.AddGenericParameter( "ProjectID", "P", "P is for ProjectID!", GH_ParamAccess.tree );
       pManager[ 0 ].Optional = true;
       pManager.AddGenericParameter( "B", "B", "B is for Book", GH_ParamAccess.tree );
       pManager[ 1 ].Optional = true;
@@ -1016,7 +1016,7 @@ namespace SpeckleGrasshopper
 
     bool IGH_VariableParameterComponent.CanInsertParameter( GH_ParameterSide side, int index )
     {
-      if ( side == GH_ParameterSide.Input )
+      if ( side == GH_ParameterSide.Input && index != 0 )
       {
         return true;
       }
@@ -1029,7 +1029,7 @@ namespace SpeckleGrasshopper
     bool IGH_VariableParameterComponent.CanRemoveParameter( GH_ParameterSide side, int index )
     {
       //We can only remove from the input
-      if ( side == GH_ParameterSide.Input && Params.Input.Count > 1 )
+      if ( side == GH_ParameterSide.Input && Params.Input.Count > 1 && index != 0)
       {
         return true;
       }
