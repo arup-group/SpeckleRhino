@@ -1021,7 +1021,10 @@ namespace SpeckleGrasshopper
       foreach ( IGH_Param myParam in Params.Input )
       {
         if (count == 0)
+        {
+          count++;
           continue;
+        }
         foreach ( object o in myParam.VolatileData.AllData( false ) )
         {
           data.Add( o );
@@ -1049,10 +1052,14 @@ namespace SpeckleGrasshopper
       List<Layer> layers = new List<Layer>();
       int startIndex = 0;
       int count = 0;
+      int c = 0;
       foreach ( IGH_Param myParam in Params.Input )
       {
-        if (count == 0)
+        if (c == 0)
+        {
+          c++;
           continue;
+        }
 
         Layer myLayer = new Layer(
             myParam.NickName,
@@ -1065,6 +1072,7 @@ namespace SpeckleGrasshopper
         layers.Add( myLayer );
         startIndex += myParam.VolatileDataCount;
         count++;
+        c++;
       }
       return layers;
     }
