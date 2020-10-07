@@ -523,7 +523,16 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance( IGH_DataAccess DA )
     {
-      DA.GetData(0, ref project);
+      project = null;
+      projectId = "";
+      var p = Params.Input[0].VolatileData.AllData(false).FirstOrDefault();
+      var v = p?.GetType().GetProperty("Value").GetValue(p);
+      project = v as Project;
+      if (project == null && v is string vs)
+        projectId = vs;
+      if(project == null && projectId == "")
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignore Project ID");
+
       if ( Client == null )
       {
         return;
