@@ -73,15 +73,19 @@ namespace SpeckleGrasshopper
       string[] keySplit = key.Split('.');
       var propertyDict = speckleObject.Properties;
 
-      try
-      {
+      /*try
+      {*/
         var output = GetNestedProp(speckleObject, keySplit, 0);
         DA.SetData(0, output);
-      }
+      /*}
       catch (System.NullReferenceException e)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not find a parameter with the key, " + key + ", on the input object");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find a parameter with the key, " + key + ", on the input object");
       }
+      catch (System.Collections.Generic.KeyNotFoundException e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find a parameter with the key, " + key + ", on the input object");
+      }*/
     }
 
     /// <summary>
@@ -105,25 +109,31 @@ namespace SpeckleGrasshopper
 
     private object GetNestedProp(object property, string[] keySplit, int keyIndex)
     {
-      object subProperty;
-      if (property is IDictionary<string, object> dictProperty)
+      try
       {
-        subProperty = dictProperty[keySplit[keyIndex]];
+        object subProperty;
+        if (property is IDictionary<string, object> dictProperty)
+        {
+          subProperty = dictProperty[keySplit[keyIndex]];
+        }
+        else
+        {
+          subProperty = property.GetType().GetProperty(keySplit[keyIndex]).GetValue(property, null);
+        }
+        if (keyIndex == keySplit.Length - 1)
+        {
+          return subProperty;
+        }
+        else
+        {
+          var newKeyIndex = keyIndex + 1;
+          return GetNestedProp(subProperty, keySplit, newKeyIndex);
+        }
       }
-      else
+      catch (Exception e) when (e is NullReferenceException || e is KeyNotFoundException)
       {
-        subProperty = property.GetType().GetProperty(keySplit[keyIndex]).GetValue(property, null);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find a parameter with the key, " + keySplit[keyIndex] + ", on the input object");
       }
-      if (keyIndex == keySplit.Length - 1)
-      {
-        return subProperty;
-      }
-      else
-      {
-        var newKeyIndex = keyIndex + 1;
-        return GetNestedProp(subProperty, keySplit, newKeyIndex);
-      }
-
     }
 
   }
