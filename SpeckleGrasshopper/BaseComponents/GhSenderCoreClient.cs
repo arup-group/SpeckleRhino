@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Timers;
@@ -39,6 +40,8 @@ namespace SpeckleGrasshopper
     private string BucketName;
     private List<Layer> BucketLayers = new List<Layer>();
     private List<object> BucketObjects = new List<object>();
+    private Project project = null;
+    private string projectId = "";
 
     public string CurrentJobClient = "none";
     public bool SolutionPrepared = false;
@@ -503,7 +506,7 @@ namespace SpeckleGrasshopper
 
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {
-      pManager.AddGenericParameter( "ProjectID", "P", "P is for ProjectID!", GH_ParamAccess.tree );
+      pManager.AddGenericParameter( "ProjectID", "P", "P is for ProjectID!", GH_ParamAccess.item );
       pManager[ 0 ].Optional = true;
       pManager.AddGenericParameter( "B", "B", "B is for Book", GH_ParamAccess.tree );
       pManager[ 1 ].Optional = true;
@@ -520,6 +523,7 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance( IGH_DataAccess DA )
     {
+      DA.GetData(0, ref project);
       if ( Client == null )
       {
         return;
@@ -897,11 +901,23 @@ namespace SpeckleGrasshopper
       baseProps[ "angleTolerance" ] = Rhino.RhinoDoc.ActiveDoc.ModelAngleToleranceRadians;
       updateStream.BaseProperties = baseProps;
 
-      var response = Client.StreamUpdateAsync( Client.StreamId, updateStream ).Result;
+      Client.StreamUpdateAsync(Client.StreamId, updateStream)
+        .ContinueWith(x =>
+        {
+          var response = x.Result;
+          Log += response.Message;
+        })
+        .ContinueWith(y => 
+        {
+          if (project != null && !project.Streams.Contains(Client.StreamId))
+          {
+              project.Streams.Add(Client.StreamId);
+              Client.ProjectUpdateAsync(project._id, project); 
+          }
+        });
 
       Client.BroadcastMessage( "stream", Client.StreamId, new { eventType = "update-global" } );
 
-      Log += response.Message;
       AddRuntimeMessage( GH_RuntimeMessageLevel.Remark, "Data sent at " + DateTime.Now );
       Message = "Data sent\n@" + DateTime.Now.ToString( "hh:mm:ss" );
 
@@ -959,12 +975,16 @@ namespace SpeckleGrasshopper
     public List<object> GetData( )
     {
       List<object> data = new List<dynamic>();
+      int count = 0;
       foreach ( IGH_Param myParam in Params.Input )
       {
+        if (count == 0)
+          continue;
         foreach ( object o in myParam.VolatileData.AllData( false ) )
         {
           data.Add( o );
         }
+        count++;
       }
 
       data = data.Select( obj =>
@@ -989,6 +1009,9 @@ namespace SpeckleGrasshopper
       int count = 0;
       foreach ( IGH_Param myParam in Params.Input )
       {
+        if (count == 0)
+          continue;
+
         Layer myLayer = new Layer(
             myParam.NickName,
             myParam.InstanceGuid.ToString(),
