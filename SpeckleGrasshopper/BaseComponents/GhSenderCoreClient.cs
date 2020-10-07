@@ -531,7 +531,7 @@ namespace SpeckleGrasshopper
       if (project == null && v is string vs)
         projectId = vs;
       if(project == null && projectId == "")
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignore Project ID");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
 
       if ( Client == null )
       {
@@ -922,6 +922,32 @@ namespace SpeckleGrasshopper
           {
               project.Streams.Add(Client.StreamId);
               Client.ProjectUpdateAsync(project._id, project); 
+          }
+          else if (projectId != "")
+          {
+            Client.ProjectGetAllAsync().ContinueWith
+            ( tsk =>
+            {
+              if(tsk.Result.Success == true)
+              {
+                var projectReceived = tsk.Result.Resources.Where(x => x._id == projectId).FirstOrDefault();
+                if(projectReceived != null)
+                {
+                  if(!projectReceived.Streams.Contains(Client.StreamId))
+                  {
+                    projectReceived.Streams.Add(Client.StreamId);
+                    Client.ProjectUpdateAsync(projectReceived._id, projectReceived);
+                  }
+                  else
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Stream is already part of the project!");
+                }
+                else
+                {
+                  AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "ProjectId didn't match any known projects");
+                }
+              }
+
+            });
           }
         });
 
