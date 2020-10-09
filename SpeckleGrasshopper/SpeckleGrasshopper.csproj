@@ -107,7 +107,7 @@
     <Compile Include="UserDataUtils\GetValueAtKey.cs" />
     <Compile Include="UserDataUtils\SetUserDataComponent.cs" />
     <Compile Include="UserDataUtils\SetUserDataSpeckleObjectComponent.cs" />
-    <Compile Include="UserDataUtils\UserDataUtilsInfo.cs" />
+    <Compile Include="UserDataUtils\SpeckleGrasshopperInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
