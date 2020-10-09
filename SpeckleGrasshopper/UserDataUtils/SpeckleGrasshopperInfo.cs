@@ -4,13 +4,13 @@ using Grasshopper.Kernel;
 
 namespace SpeckleGrasshopper
 {
-    public class UserDataUtilsInfo : GH_AssemblyInfo
+    public class SpeckleGrasshopperInfo : GH_AssemblyInfo
     {
         public override string Name
         {
             get
             {
-                return "UserDataUtils";
+                return "Speckle";
             }
         }
         public override Bitmap Icon
@@ -26,7 +26,7 @@ namespace SpeckleGrasshopper
             get
             {
                 //Return a short string describing the purpose of this GHA library.
-                return "";
+                return "The Speckle Grasshopper plugin.";
             }
         }
         public override Guid Id
@@ -42,7 +42,7 @@ namespace SpeckleGrasshopper
             get
             {
                 //Return a string identifying you or your company.
-                return "";
+                return "Speckle Works";
             }
         }
         public override string AuthorContact
@@ -50,8 +50,13 @@ namespace SpeckleGrasshopper
             get
             {
                 //Return a string representing your preferred contact details.
-                return "";
+                return "https://speckle.works";
             }
         }
-    }
+
+    public override string Version => "1.0.0.0";
+    public override string AssemblyVersion => "1.0.*";
+
+    public override GH_LibraryLicense License => GH_LibraryLicense.opensource;
+  }
 }
