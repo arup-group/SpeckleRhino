@@ -10,7 +10,7 @@ namespace SpeckleGrasshopper
         {
             get
             {
-                return "Speckle";
+                return "Speckle (CX)";
             }
         }
         public override Bitmap Icon
@@ -26,7 +26,7 @@ namespace SpeckleGrasshopper
             get
             {
                 //Return a short string describing the purpose of this GHA library.
-                return "The Speckle Grasshopper plugin.";
+                return "The Speckle Grasshopper plugin, community extension edition.";
             }
         }
         public override Guid Id
@@ -42,7 +42,7 @@ namespace SpeckleGrasshopper
             get
             {
                 //Return a string identifying you or your company.
-                return "Speckle Works";
+                return "Speckle Community";
             }
         }
         public override string AuthorContact
