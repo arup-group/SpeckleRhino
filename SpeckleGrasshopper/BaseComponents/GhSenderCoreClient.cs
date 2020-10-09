@@ -507,12 +507,13 @@ namespace SpeckleGrasshopper
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {
       pManager.AddGenericParameter( "Project", "P", "Optional input for either a Project type (get it from ListMyProject component) or a string for the ProjectId", GH_ParamAccess.tree );
-      pManager[ 0 ].Optional = true;
+      pManager[0].Optional = true;
+      pManager.AddGenericParameter("A", "A", "A is for Apple", GH_ParamAccess.tree);
+      pManager[1].Optional = true;
       pManager.AddGenericParameter( "B", "B", "B is for Book", GH_ParamAccess.tree );
-      pManager[ 1 ].Optional = true;
+      pManager[2].Optional = true;
       pManager.AddGenericParameter( "C", "C", "C is for Car", GH_ParamAccess.tree );
-      pManager[ 2 ].Optional = true;
-
+      pManager[3].Optional = true;
     }
 
     protected override void RegisterOutputParams( GH_Component.GH_OutputParamManager pManager )
