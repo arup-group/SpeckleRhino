@@ -23,7 +23,7 @@ namespace SpeckleGrasshopper
     public GetSpeckleObjectApplicationIdComponent()
       : base("Get ApplicationId", "GAID",
           "Gets a speckle object and returns the ApplicationId.",
-          "Speckle", "Special")
+          "Speckle", "Advanced")
     {
     }
 

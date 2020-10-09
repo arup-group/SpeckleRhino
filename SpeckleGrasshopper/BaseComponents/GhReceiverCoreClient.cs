@@ -52,9 +52,9 @@ namespace SpeckleGrasshopper
     public bool IsUpdating = false;
 
     public GhReceiverClient( )
-      : base( "Data Receiver", "Data Receiver",
-          "Receives data from Speckle.",
-          "Speckle", "I/O" )
+      : base( "Data Receiver", "DR",
+          "Receives data from Speckle. (cx)",
+          "Speckle", "   Server" )
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

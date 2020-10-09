@@ -34,7 +34,7 @@ namespace SpeckleGrasshopper
     public ModifySpeckleObjectProperties( )
       : base( "Modifies SpeckleObject Properties", "MSOP",
         "Allows properties of a SpeckleObject to be modified.",
-        "Speckle", "SpeckleKits" )
+        "Speckle", " Properties")
     {
       GenerateOptionalPropsMenu();
     }

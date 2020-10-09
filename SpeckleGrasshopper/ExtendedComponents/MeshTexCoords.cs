@@ -24,6 +24,11 @@ namespace SpeckleGrasshopper.Contrib
       SpeckleCore.LocalContext.Init();
     }
 
+    public override Grasshopper.Kernel.GH_Exposure Exposure
+    {
+      get { return GH_Exposure.hidden; }
+    }
+
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {
       pManager.AddMeshParameter( "Mesh", "M", "Source mesh.", GH_ParamAccess.item );

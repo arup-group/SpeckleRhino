@@ -32,8 +32,8 @@ namespace SpeckleGrasshopper.UserDataUtils
 
     public SchemaBuilderComponent()
       : base("Schema Builder Component", "SBC",
-              "Builds Speckle Types through reflecting upon SpeckleCore and SpeckleKits.",
-              "Speckle", "SpeckleKits")
+              "Build a SpeckleObject by selecting a type from your installed SpeckleKits.",
+              "Speckle", "  Create Objects")
     {
       GenerateOptionalPropsMenu();
     }

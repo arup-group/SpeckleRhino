@@ -26,11 +26,15 @@ namespace SpeckleGrasshopper
     public ConvertSpeckleObject()
       : base("Converts a Speckle Object", "CVSO",
         "Converts Speckle objects into another.",
-        "Speckle", "SpeckleKits")
+        "Speckle", "Creating Objects")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();
       SelectedType = null;
+    }
+    public override Grasshopper.Kernel.GH_Exposure Exposure
+    {
+      get { return GH_Exposure.hidden; }
     }
 
     /// <summary>

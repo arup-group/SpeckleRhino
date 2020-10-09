@@ -14,7 +14,7 @@ namespace SpeckleGrasshopper
     public QuerySpeckleObjectComponent()
       : base("Query Speckle Object", "QSO",
           "Gets a value from a dictionary by string of concatenated keys. \n For example, 'prop.subprop.subsubprop'.",
-          "Speckle", "Special")
+          "Speckle", " Properties")
     {
     }
 

@@ -20,7 +20,7 @@ namespace SpeckleGrasshopper.Management
     Action ExpireComponent;
 
     public ListMyProjects()
-      : base("Projects", "Projects", "Lists projects you own or have access to", "Speckle", "Management")
+      : base("Projects", "Projects", "Lists projects you own or have access to", "Speckle", "   Server")
     {
       SpeckleInitializer.Initialize();
       LocalContext.Init();

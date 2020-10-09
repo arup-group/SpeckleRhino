@@ -23,7 +23,7 @@ namespace SpeckleGrasshopper
     public ExpandUserDataComponent( )
       : base( "Expand User Data", "EUD",
           "Expands user dictionaries into their component keys (if matching).",
-          "Speckle", "User Data Utils" )
+          "Speckle", "Speckle Object Data")
     {
       expireComponent = ( ) =>
       {
@@ -56,6 +56,11 @@ namespace SpeckleGrasshopper
               //end
               this.ExpireSolution( true );
       };
+    }
+
+    public override Grasshopper.Kernel.GH_Exposure Exposure
+    {
+      get { return GH_Exposure.hidden; }
     }
 
     public override void AddedToDocument( GH_Document document )
