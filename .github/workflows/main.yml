@@ -63,7 +63,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.1
         
       - name: set assembly version variables
-        run: > # needed for YAML to not interpret the colon as a key-value argument
+        run: |
           $VERSION_REGEX = '(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(").*("\)\])'
           echo "::set-env name=VERSION_REGEX::$VERSION_REGEX"
           
