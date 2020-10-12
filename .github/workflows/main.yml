@@ -20,7 +20,10 @@ jobs:
     steps:
       # if verison is of form v1.2.3-cx extracts 1.2.3 
       - name: get version
-        run: $env:GITHUB_REF -match "ref/tags/v(?<content>.*)-cx"; $env:SPECKLE_VERSION = $matches['content']
+        run: |
+          echo $env:GITHUB_REF
+          $env:GITHUB_REF -match "ref/tags/v(?<content>.*)-cx"
+          $env:SPECKLE_VERSION = $matches['content']
         
       - name: Generate build number
         uses: einaregilsson/build-number@v2 
