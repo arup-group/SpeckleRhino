@@ -68,8 +68,8 @@ jobs:
           $assembinfo = (Get-Content $infopath)
           echo $assembinfo
           $replacedassembinfo = $assembinfo
-          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyVersion("1.0.*")]', '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]'
-          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyFileVersion("1.0.0.0")]', '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]'
+          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyVersion("1.0.*")]', ( '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]' )
+          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyFileVersion("1.0.0.0")]', ( '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]' )
           echo $replacedassembinfo
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
         
@@ -79,8 +79,8 @@ jobs:
           $assembinfo = (Get-Content $infopath)
           echo $assembinfo
           $replacedassembinfo = $assembinfo
-          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyVersion("1.0.0.0")]', '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]'
-          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyFileVersion("1.0.0.0")]', '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]'
+          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyVersion("1.0.0.0")]', ( '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]' )
+          $replacedassembinfo = $replacedassembinfo -replace '[assembly: AssemblyFileVersion("1.0.0.0")]', ( '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]' )
           echo $replacedassembinfo
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
       
