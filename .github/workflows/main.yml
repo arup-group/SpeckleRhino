@@ -62,7 +62,7 @@ jobs:
       - name: setup-msbuild
         uses: microsoft/setup-msbuild@v1.0.1
           
-      - name: set grasshopper version
+      - name: set grasshopper version in .dll
         run: |
           $infopath = 'SpeckleGrasshopper/Properties/AssemblyInfo.cs'
           $assembinfo = (Get-Content $infopath)
@@ -70,6 +70,17 @@ jobs:
           $replacedassembinfo = $assembinfo
           $replacedassembinfo = $replacedassembinfo.Replace('[assembly: AssemblyVersion("1.0.*")]', ( '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]' ))
           $replacedassembinfo = $replacedassembinfo.Replace('[assembly: AssemblyFileVersion("1.0.0.0")]', ( '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]' ))
+          echo $replacedassembinfo
+          Out-File -FilePath $infopath -InputObject $replacedassembinfo
+          
+      - name: set grasshopper version in gh info
+        run: |
+          $infopath = 'SpeckleGrasshopper/UserDataUtils/SpeckleGrasshopperInfo.cs'
+          $assembinfo = (Get-Content $infopath)
+          echo $assembinfo
+          $replacedassembinfo = $assembinfo
+          $replacedassembinfo = $replacedassembinfo.Replace('public override string Version => "1.0.0.0";', ( 'public override string Version => "' + $env:FULL_VERSION + '";' ))
+          $replacedassembinfo = $replacedassembinfo.Replace('public override string AssemblyVersion => "1.0.*";', ( 'public override string AssemblyVersion => "' + $env:FULL_VERSION + '";' ))
           echo $replacedassembinfo
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
         
