@@ -64,7 +64,7 @@ jobs:
           
       - name: set grasshopper version
         run: |
-          $infopath = SpeckleGrasshopper/Properties/AssemblyInfo.cs
+          $infopath = 'SpeckleGrasshopper/Properties/AssemblyInfo.cs'
           $assembinfo = (Get-Content $infopath)
           echo $assembinfo
           $replacedassembinfo = $assembinfo
@@ -75,7 +75,7 @@ jobs:
         
       - name: set rhino version # do we need to change AssemblyInformationalVersion as well?
         run: |
-          $infopath = SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs
+          $infopath = 'SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs'
           $assembinfo = (Get-Content $infopath)
           echo $assembinfo
           $replacedassembinfo = $assembinfo
