@@ -118,7 +118,7 @@ namespace SpeckleGrasshopper
       }
       catch (Exception e) when (e is System.NullReferenceException || e is System.Collections.Generic.KeyNotFoundException)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find a parameter with the key, " + keySplit[keyIndex] + ", on the input object");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find parameter with key: '{keySplit[keyIndex]}'.");
         return null;
       }
     }
