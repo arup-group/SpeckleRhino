@@ -18,8 +18,8 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # if verison is of form v1.2.3-cx extracts 1.2.3 
-      - name: get version
+      # if version is of form v1.2.3-cx extracts 1.2.3 
+      - name: get version from tag
         run: |
           echo $env:GITHUB_REF
           $env:GITHUB_REF -match "refs/tags/v(?<content>.*)-cx"
@@ -31,10 +31,10 @@ jobs:
           token: ${{secrets.github_token}}
           
       - name: set full version number
-        run: $env:FULL_VERSION = "$env:SPECKLE_VERSION.${env:BUILD_NUMBER}"    
+        run: $env:FULL_VERSION = '$env:SPECKLE_VERSION.${env:BUILD_NUMBER}'  
       
       - name: Print full version number
-        run: echo "Version is $env:FULL_VERSION"
+        run: echo 'Version is $env:FULL_VERSION'
       
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout
