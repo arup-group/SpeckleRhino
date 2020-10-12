@@ -61,27 +61,26 @@ jobs:
         
       - name: setup-msbuild
         uses: microsoft/setup-msbuild@v1.0.1
-        
-      - name: set assembly version variables
-        run: |
-          $VERSION_REGEX = '(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(").*("\)\])'
-          echo "::set-env name=VERSION_REGEX::$VERSION_REGEX"
           
       - name: set grasshopper version
         run: |
           $infopath = SpeckleGrasshopper/Properties/AssemblyInfo.cs
           $assembinfo = (Get-Content $infopath)
           echo $assembinfo
-          $replacedassembinfo = $assembinfo -replace "$env:VERSION_REGEX" "$1$env:FULL_VERSION$3"
+          $replacedassembinfo = $assembinfo
+          $replacedassembinfo = $assembinfo -replace '[assembly: AssemblyVersion("1.0.*")]', "[assembly: AssemblyVersion(\"$env:FULL_VERSION\")]"
+          $replacedassembinfo = $assembinfo -replace '[assembly: AssemblyFileVersion("1.0.0.0")]', "[assembly: AssemblyFileVersion(\"$env:FULL_VERSION\")]"
           echo $replacedassembinfo
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
         
       - name: set rhino version # do we need to change AssemblyInformationalVersion as well?
-        run:
+        run: |
           $infopath = SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs
           $assembinfo = (Get-Content $infopath)
           echo $assembinfo
-          $replacedassembinfo = $assembinfo -replace "$env:VERSION_REGEX" "$1$env:FULL_VERSION$3"
+          $replacedassembinfo = $assembinfo
+          $replacedassembinfo = $assembinfo -replace '[assembly: AssemblyVersion("1.0.0.0")]', "[assembly: AssemblyVersion(\"$env:FULL_VERSION\")]"
+          $replacedassembinfo = $assembinfo -replace '[assembly: AssemblyFileVersion("1.0.0.0")]', "[assembly: AssemblyFileVersion(\"$env:FULL_VERSION\")]"
           echo $replacedassembinfo
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
       
