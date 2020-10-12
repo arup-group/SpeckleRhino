@@ -64,14 +64,26 @@ jobs:
         
       - name: set assembly version variables
         run: > # needed for YAML to not interpret the colon as a key-value argument
-          $VERSION_REGEX = "(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(").*("\)\])"
+          $VERSION_REGEX = '(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(").*("\)\])'
           echo "::set-env name=VERSION_REGEX::$VERSION_REGEX"
           
       - name: set grasshopper version
-        run: (Get-Content SpeckleGrasshopper/Properties/AssemblyInfo.cs) -replace '$env:VERSION_REGEX' '$1$env:FULL_VERSION$3' SpeckleGrasshopper/Properties/AssemblyInfo.cs
+        run: |
+          $infopath = SpeckleGrasshopper/Properties/AssemblyInfo.cs
+          $assembinfo = (Get-Content $infopath)
+          echo $assembinfo
+          $replacedassembinfo = $assembinfo -replace "$env:VERSION_REGEX" "$1$env:FULL_VERSION$3"
+          echo $replacedassembinfo
+          Out-File -FilePath $infopath -InputObject $replacedassembinfo
         
       - name: set rhino version # do we need to change AssemblyInformationalVersion as well?
-        run: (Get-Content SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs) -replace '$env:VERSION_REGEX' '$1$env:FULL_VERSION$3' SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs
+        run:
+          $infopath = SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs
+          $assembinfo = (Get-Content $infopath)
+          echo $assembinfo
+          $replacedassembinfo = $assembinfo -replace "$env:VERSION_REGEX" "$1$env:FULL_VERSION$3"
+          echo $replacedassembinfo
+          Out-File -FilePath $infopath -InputObject $replacedassembinfo
       
       - name: msbuild 
         run: msbuild SpeckleRhino.sln -p:Configuration=Release
