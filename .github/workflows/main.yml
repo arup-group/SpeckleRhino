@@ -23,7 +23,9 @@ jobs:
         run: |
           echo $env:GITHUB_REF
           $env:GITHUB_REF -match "refs/tags/v(?<content>.*)-cx"
-          echo $env:SPECKLE_VERSION = $matches["content"]
+          $SPECKLE_VERSION = $matches["content"]
+          echo "::set-env name=SPECKLE_VERSION::$SPECKLE_VERSION" 
+        # github action syntax for setting variables ^
         
       - name: Generate build number
         uses: einaregilsson/build-number@v2 
@@ -31,7 +33,9 @@ jobs:
           token: ${{secrets.github_token}}
           
       - name: set full version number
-        run: $env:FULL_VERSION = "$env:SPECKLE_VERSION.$env:BUILD_NUMBER"
+        run: |
+          $FULL_VERSION = "$env:SPECKLE_VERSION.$env:BUILD_NUMBER"
+          echo "::set-env name=FULL_VERSION::$FULL_VERSION"
       
       - name: Print full version number
         run: echo "Version is $env:FULL_VERSION"
