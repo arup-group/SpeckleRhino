@@ -64,7 +64,8 @@ jobs:
         
       - name: set assembly version variables
         run: > # needed for YAML to not interpret the colon as a key-value argument
-          $env:VERSION_REGEX = "(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(").*("\)\])"
+          $VERSION_REGEX = "(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(").*("\)\])"
+          echo "::set-env name=VERSION_REGEX::$VERSION_REGEX"
           
       - name: set grasshopper version
         run: (Get-Content SpeckleGrasshopper/Properties/AssemblyInfo.cs) -replace '$env:VERSION_REGEX' '$1$env:FULL_VERSION$3' SpeckleGrasshopper/Properties/AssemblyInfo.cs
