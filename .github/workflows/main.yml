@@ -22,7 +22,7 @@ jobs:
       - name: get version
         run: |
           echo $env:GITHUB_REF
-          $env:GITHUB_REF -match "ref/tags/v(?<content>.*)-cx"
+          $env:GITHUB_REF -match "refs/tags/v(?<content>.*)-cx"
           $env:SPECKLE_VERSION = $matches['content']
         
       - name: Generate build number
