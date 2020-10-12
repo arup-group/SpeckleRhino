@@ -28,8 +28,6 @@ namespace SpeckleGrasshopper
     {
     }
 
-    /*the graft option needs to be set in a DataMapping property of the GH_Param when being added to the component.*/
-
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
@@ -71,21 +69,9 @@ namespace SpeckleGrasshopper
 
       /// Split user input path into pieces
       string[] keySplit = key.Split('.');
-      var propertyDict = speckleObject.Properties;
 
-      /*try
-      {*/
-        var output = GetNestedProp(speckleObject, keySplit, 0);
-        DA.SetData(0, output);
-      /*}
-      catch (System.NullReferenceException e)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find a parameter with the key, " + key + ", on the input object");
-      }
-      catch (System.Collections.Generic.KeyNotFoundException e)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find a parameter with the key, " + key + ", on the input object");
-      }*/
+      var output = GetNestedProp(speckleObject, keySplit, 0);
+      DA.SetData(0, output);
     }
 
     /// <summary>
