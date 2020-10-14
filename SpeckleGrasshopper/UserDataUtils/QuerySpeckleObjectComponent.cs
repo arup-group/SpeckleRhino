@@ -118,7 +118,20 @@ namespace SpeckleGrasshopper
       }
       catch (Exception e) when (e is System.NullReferenceException || e is System.Collections.Generic.KeyNotFoundException)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find parameter with key: '{keySplit[keyIndex]}'.");
+        // A holder array to hold the elements that have been visited
+        List<string> temp = new List<string>();
+
+        // Make sure length > 0 first before trying to access element 0
+        if (keySplit.Length > 0)
+        {
+          // for each element in our array up to the currentIndex, add that element at that index to a temp list
+          for (int i = 0; i <= keyIndex; i++)
+          {
+            temp.Add(keySplit[i]);
+          }
+        }
+        var result = String.Join(".", temp.ToArray());
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Could not find parameter with key: '{result}'.");
         return null;
       }
     }
