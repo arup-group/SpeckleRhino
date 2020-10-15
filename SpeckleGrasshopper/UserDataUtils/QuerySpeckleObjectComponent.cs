@@ -1,23 +1,13 @@
-﻿//extern alias SpeckleNewtonsoft;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using Grasshopper.Kernel;
-using Rhino.Geometry;
-//using Newtonsoft.Json;
-using Rhino.Collections;
-using Grasshopper.Kernel.Types;
 using System.Windows.Forms;
-using System.IO;
-using Grasshopper.Kernel.Parameters;
-using SpeckleCore;
-using System.Linq;
 
 namespace SpeckleGrasshopper
 {
   public class QuerySpeckleObjectComponent : GH_Component
   {
-    HashSet<string> properties;
     /// <summary>
     /// Initializes a new instance of the MyComponent1 class.
     /// </summary>
