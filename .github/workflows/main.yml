@@ -1,0 +1,133 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    tags: 'v*.*.*-cx'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # if version is of form v1.2.3-cx extracts 1.2.3 
+      - name: get version from tag
+        run: |
+          echo $env:GITHUB_REF
+          $env:GITHUB_REF -match "refs/tags/v(?<content>.*)-cx"
+          $SPECKLE_VERSION = $matches["content"]
+          echo "::set-env name=SPECKLE_VERSION::$SPECKLE_VERSION" 
+        # github action syntax for setting variables ^
+        
+      - name: Generate build number
+        uses: einaregilsson/build-number@v2 
+        with:
+          token: ${{secrets.github_token}}
+          
+      - name: set full version number
+        run: |
+          $FULL_VERSION = "$env:SPECKLE_VERSION.$env:BUILD_NUMBER"
+          echo "::set-env name=FULL_VERSION::$FULL_VERSION"
+      
+      - name: Print full version number
+        run: echo "Version is $env:FULL_VERSION"
+      
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout
+        uses: actions/checkout@v2
+        
+      - name: init SpeckleView
+        run: git submodule update --init
+        
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.3
+        
+      - name: build SpeckleView
+        run: cd SpeckleView; npm install; npm run build
+        
+      - name: Setup NuGet.exe for use with actions
+        uses: NuGet/setup-nuget@v1.0.2
+        
+      - name: nuget restore
+        run: nuget restore SpeckleRhino.sln
+        
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v1.0.1
+          
+      - name: set grasshopper version in .dll
+        run: |
+          $infopath = 'SpeckleGrasshopper/Properties/AssemblyInfo.cs'
+          $assembinfo = (Get-Content $infopath)
+          echo $assembinfo
+          $replacedassembinfo = $assembinfo
+          $replacedassembinfo = $replacedassembinfo.Replace('[assembly: AssemblyVersion("1.0.*")]', ( '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]' ))
+          $replacedassembinfo = $replacedassembinfo.Replace('[assembly: AssemblyFileVersion("1.0.0.0")]', ( '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]' ))
+          echo $replacedassembinfo
+          Out-File -FilePath $infopath -InputObject $replacedassembinfo
+          
+      - name: set grasshopper version in gh info
+        run: |
+          $infopath = 'SpeckleGrasshopper/UserDataUtils/SpeckleGrasshopperInfo.cs'
+          $assembinfo = (Get-Content $infopath)
+          echo $assembinfo
+          $replacedassembinfo = $assembinfo
+          $replacedassembinfo = $replacedassembinfo.Replace('public override string Version => "1.0.0.0";', ( 'public override string Version => "' + $env:FULL_VERSION + '";' ))
+          $replacedassembinfo = $replacedassembinfo.Replace('public override string AssemblyVersion => "1.0.*";', ( 'public override string AssemblyVersion => "' + $env:FULL_VERSION + '";' ))
+          echo $replacedassembinfo
+          Out-File -FilePath $infopath -InputObject $replacedassembinfo
+        
+      - name: set rhino version # do we need to change AssemblyInformationalVersion as well?
+        run: |
+          $infopath = 'SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs'
+          $assembinfo = (Get-Content $infopath)
+          echo $assembinfo
+          $replacedassembinfo = $assembinfo
+          $replacedassembinfo = $replacedassembinfo.Replace('[assembly: AssemblyVersion("1.0.0.0")]', ( '[assembly: AssemblyVersion("' + $env:FULL_VERSION + '")]' ))
+          $replacedassembinfo = $replacedassembinfo.Replace('[assembly: AssemblyFileVersion("1.0.0.0")]', ( '[assembly: AssemblyFileVersion("' + $env:FULL_VERSION + '")]' ))
+          echo $replacedassembinfo
+          Out-File -FilePath $infopath -InputObject $replacedassembinfo
+      
+      - name: msbuild 
+        run: msbuild SpeckleRhino.sln -p:Configuration=Release
+        
+      - name: rename gha
+        run: Rename-Item -Path SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha -NewName SpeckleGrasshopper-cx.gha
+          
+      - name: zip rhp
+        run: Compress-Archive -DestinationPath SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip -Path SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/*
+        
+      - name: change from zip to rhi
+        run: Rename-Item -Path SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip -NewName SpeckleWinR6-cx.rhi
+          
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        
+      - name: Upload gha
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.gha
+          asset_name: SpeckleGrasshopper-cx.gha
+          asset_content_type: application/octet-stream # its just a binary file (.dll) under the hood
+
+      - name: Upload rhi 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.rhi
+          asset_name: SpeckleWinR6-cx.rhi
+          asset_content_type: application/zip # thats what the rhi is under the hood
