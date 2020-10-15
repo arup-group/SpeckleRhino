@@ -74,6 +74,7 @@
     <Compile Include="UserDataUtils\GetApplicationId.cs" />
     <Compile Include="Parameters\Param_SpeckleStreams.cs" />
     <Compile Include="UserDataUtils\QuerySpeckleObjectComponent.cs" />
+    <Compile Include="UserDataUtils\QuerySpeckleObjectComponent_OBSOLETE.cs" />
     <Compile Include="Utilities\CollectionExtentions.cs" />
     <Compile Include="Utilities\SpecklStreamExtentions.cs" />
     <Compile Include="Loader.cs" />
