@@ -67,6 +67,148 @@ namespace SpeckleGrasshopper
       if (!DA.GetData(1, ref key))
         return;
 
+//First Pass on Iteration 0
+      if (DA.Iteration == 0)
+      {
+        //Get All the Paths, even if on a tree
+        var allData = Params.Input.OfType<Param_String>()
+               .First()
+               .VolatileData.AllData(true)
+               .OfType<GH_String>()
+               .Select(s => s.Value);
+        if (!allData.Any())
+        {
+          return;
+        }
+        properties = new HashSet<string>();
+        foreach (var p in allData)
+        {
+          properties.Add(p);
+        }
+      }
+
+      if (OutputMismatch() && DA.Iteration == 0)
+      {
+        OnPingDocument().ScheduleSolution(5, d =>
+        {
+          AutoCreateOutputs(false);
+        });
+      }
+      else if (!OutputMismatch())
+      {
+        int o = 0;
+        foreach (var p in properties)
+        {
+
+          var temp = dict;
+          var keys = p.Split('.');
+          object target = null;
+
+          for (int i = 0; i < keys.Length; i++)
+          {
+            if (i == keys.Length - 1)
+              if (temp.ContainsKey(keys[i]))
+              {
+                target = temp[keys[i]];
+              }
+              else
+              {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Parameter {o + 1} is missing data at [{i}]{keys[i]}");
+                break;
+              }
+            else
+            {
+              if (temp.ContainsKey(keys[i]))
+              {
+                var t = temp[keys[i]];
+                if (t is Dictionary<string, object> d)
+                  temp = d;
+                else if (t is SpeckleObject speckleObject)
+                  temp = speckleObject.Properties;
+              }
+              else
+              {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Parameter {o + 1} is missing data at {keys[i]}");
+                break;
+              }
+            }
+          }
+
+          if (target is List<object> myList)
+          {
+            DA.SetDataList(o, myList);
+          }
+          else if (target is object)
+          {
+            DA.SetDataList(o, new List<object> { target });
+          }
+          o++;
+        }
+      }
+
+    }
+    private void AutoCreateOutputs(bool recompute)
+    {
+
+      var tokenCount = properties.Count();
+      if (tokenCount == 0) return;
+
+      if (OutputMismatch())
+      {
+        RecordUndoEvent("Creating Outputs");
+        if (Params.Output.Count < tokenCount)
+        {
+          while (Params.Output.Count < tokenCount)
+          {
+            var new_param = CreateParameter(GH_ParameterSide.Output, Params.Output.Count);
+            Params.RegisterOutputParam(new_param);
+          }
+        }
+        else if (Params.Output.Count > tokenCount)
+        {
+          while (Params.Output.Count > tokenCount)
+          {
+            Params.UnregisterOutputParameter(Params.Output[Params.Output.Count - 1]);
+          }
+        }
+        Params.OnParametersChanged();
+        VariableParameterMaintenance();
+        ExpireSolution(recompute);
+      }
+    }
+
+    private bool OutputMismatch()
+    {
+      var countMatch = properties.Count() == Params.Output.Count;
+      if (!countMatch) return true;
+
+      var list = properties.ToList();
+      for (int i = 0; i < properties.Count; i++)
+      {
+        if (!(Params.Output[i].NickName == list[i]))
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    public bool CanInsertParameter(GH_ParameterSide side, int index)
+    {
+      return false;
+    }
+
+    public bool CanRemoveParameter(GH_ParameterSide side, int index)
+    {
+      return false;
+    }
+
+    public IGH_Param CreateParameter(GH_ParameterSide side, int index)
+    {
+      return new Param_GenericObject();
+    }
+
       /// Split user input path into pieces
       string[] keySplit = key.Split('.');
 
