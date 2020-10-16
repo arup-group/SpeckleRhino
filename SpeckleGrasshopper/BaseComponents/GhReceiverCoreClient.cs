@@ -30,9 +30,7 @@ namespace SpeckleGrasshopper
     string AuthToken;
     string RestApi;
     public string StreamId;
-
     public bool Deserialize = true;
-
     public bool Paused = false;
     public bool Expired = false;
 
