@@ -22,18 +22,20 @@ using System.Drawing;
 using Grasshopper.GUI.Canvas;
 using System.Windows.Forms;
 using Grasshopper.GUI;
+using System.Reflection;
 
 namespace SpeckleGrasshopper
 {
   public class GhReceiverClient : GH_Component, IGH_VariableParameterComponent
   {
+    Account account;
     string AuthToken;
     string RestApi;
     public string StreamId;
     public bool Deserialize = true;
     public bool Paused = false;
     public bool Expired = false;
-
+    private bool AccountRequired = false;
     public GH_Document Document;
 
     public SpeckleApiClient Client;
@@ -75,6 +77,7 @@ namespace SpeckleGrasshopper
             writer.SetByteArray( "speckleclient", ms.ToArray() );
           }
         writer.SetBoolean( "deserialize", this.Deserialize );
+        writer.SetBoolean("AccountRequired", AccountRequired);
       }
       catch { }
       return base.Write( writer );
@@ -98,7 +101,7 @@ namespace SpeckleGrasshopper
 
           InitReceiverEventsAndGlobals();
         }
-
+        reader.TryGetBoolean("AccountRequired", ref AccountRequired);
         this.Deserialize = reader.GetBoolean( "deserialize" );
       }
       catch
@@ -145,20 +148,25 @@ namespace SpeckleGrasshopper
         AuthToken = account.Token;
       }
 
-      StreamIdChanger = new System.Timers.Timer( 1000 ); StreamIdChanger.Enabled = false;
-      StreamIdChanger.AutoReset = false;
+      StreamIdChanger = new System.Timers.Timer(1000)
+      {
+        Enabled = false,
+        AutoReset = false
+      };
       StreamIdChanger.Elapsed += ChangeStreamId;
     }
 
     private void ChangeStreamId( object sender, System.Timers.ElapsedEventArgs e )
     {
-      Debug.WriteLine( "Changing streams to {0}.", StreamId );
-      Client = new SpeckleApiClient( RestApi, true );
+      Debug.WriteLine("Changing streams to {0}.", StreamId);
+      UpdateClient(RestApi, AuthToken);
+    }
 
+    private void UpdateClient(string RestApi, string AuthToken)
+    {
+      Client = new SpeckleApiClient(RestApi, true);
       InitReceiverEventsAndGlobals();
-
-      Client.IntializeReceiver( StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken );
-
+      Client.IntializeReceiver(StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
     }
 
     public void InitReceiverEventsAndGlobals( )
@@ -184,6 +192,9 @@ namespace SpeckleGrasshopper
 
     public override void AppendAdditionalMenuItems( ToolStripDropDown menu )
     {
+      Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
+      Menu_AppendSeparator(menu);
+
       base.AppendAdditionalMenuItems( menu );
       GH_DocumentObject.Menu_AppendItem( menu, "Copy streamId (" + StreamId + ") to clipboard.", ( sender, e ) =>
         {
@@ -229,7 +240,7 @@ namespace SpeckleGrasshopper
          if ( StreamId == null ) return;
          System.Diagnostics.Process.Start( RestApi + @"/streams/" + StreamId + @"/objects?omit=displayValue,base64" );
        } );
-
+      
       if ( Client == null || Client.Stream == null ) return;
 
       GH_DocumentObject.Menu_AppendSeparator( menu );
@@ -256,6 +267,35 @@ namespace SpeckleGrasshopper
          } );
       }
 
+      
+
+    }
+
+    private void OnAddAccount(object sender, EventArgs e)
+    {
+      AccountRequired = !AccountRequired;
+      
+      if(AccountRequired)
+      {
+        Params.Input.Insert(1, new Param_GenericObject() 
+        {
+          Name = "Account",
+          NickName = "Ac", 
+          Access = GH_ParamAccess.item,        
+        });
+        Params.OnParametersChanged();
+        ExpireSolution(false);
+      }
+      else
+      {
+        var paramMatch = Params.Input.Where(x => x.Name.Equals("Account")).FirstOrDefault();
+        if(paramMatch != null)
+        {
+          Params.Input.Remove(paramMatch);
+          Params.OnParametersChanged();
+          ExpireSolution(false);
+        }
+      }
     }
 
     public virtual void OnWsMessage( object source, SpeckleEventArgs e )
@@ -297,82 +337,95 @@ namespace SpeckleGrasshopper
 
       IsUpdating = true;
 
-      var getStream = Client.StreamGetAsync( Client.StreamId, null ).Result;
-
-      NickName = getStream.Resource.Name;
-      Layers = getStream.Resource.Layers.ToList();
-
-      Client.Stream = getStream.Resource;
-
-      // add or update the newly received stream in the cache.
-      LocalContext.AddOrUpdateStream( Client.Stream, Client.BaseUrl );
-
-      this.Message = "Getting objects!";
-
-      // pass the object list through a cache check 
-      //LocalContext.GetCachedObjects( Client.Stream.Objects, Client.BaseUrl );
-
-      // filter out the objects that were not in the cache and still need to be retrieved
-      var payload = Client.Stream.Objects.Where( o => o.Type == "Placeholder" ).Select( obj => obj._id ).ToArray();
-
-      // how many objects to request from the api at a time
-      int maxObjRequestCount = 42;
-
-      // list to hold them into
-      var newObjects = new List<SpeckleObject>();
-
-      // jump in `maxObjRequestCount` increments through the payload array
-      for ( int i = 0; i < payload.Length; i += maxObjRequestCount )
+      try
       {
-        // create a subset
-        var subPayload = payload.Skip( i ).Take( maxObjRequestCount ).ToArray();
+        var getStream = Client.StreamGetAsync( Client.StreamId, null ).Result;
 
-        // get it sync as this is always execed out of the main thread
-        var res = Client.ObjectGetBulkAsync( subPayload, "omit=displayValue" ).Result;
+        NickName = getStream.Resource.Name;
+        Layers = getStream.Resource.Layers.ToList();
 
-        // put them in our bucket
-        newObjects.AddRange( res.Resources );
-        this.Message = SNJ.JsonConvert.SerializeObject( String.Format( "{0}/{1}", i, payload.Length ) );
-      }
+        Client.Stream = getStream.Resource;
 
-      foreach ( var obj in newObjects )
-      {
-        var matches = Client.Stream.Objects.FindAll( o => o._id == obj._id );
+        // add or update the newly received stream in the cache.
+        LocalContext.AddOrUpdateStream( Client.Stream, Client.BaseUrl );
 
-        //TODO: Do this efficiently, this is rather brute force
-        for ( int i = Client.Stream.Objects.Count - 1; i >= 0; i-- )
+        this.Message = "Getting objects!";
+
+        // pass the object list through a cache check 
+        //LocalContext.GetCachedObjects( Client.Stream.Objects, Client.BaseUrl );
+
+        // filter out the objects that were not in the cache and still need to be retrieved
+        var payload = Client.Stream.Objects.Where( o => o.Type == "Placeholder" ).Select( obj => obj._id ).ToArray();
+
+        // how many objects to request from the api at a time
+        int maxObjRequestCount = 42;
+
+        // list to hold them into
+        var newObjects = new List<SpeckleObject>();
+
+        // jump in `maxObjRequestCount` increments through the payload array
+        for ( int i = 0; i < payload.Length; i += maxObjRequestCount )
         {
-          if ( Client.Stream.Objects[ i ]._id == obj._id )
-          {
-            Client.Stream.Objects[ i ] = obj;
-          }
-        }
-      }
+          // create a subset
+          var subPayload = payload.Skip( i ).Take( maxObjRequestCount ).ToArray();
 
-      // add objects to cache async
-      Task.Run( ( ) =>
-      {
+          // get it sync as this is always execed out of the main thread
+          var res = Client.ObjectGetBulkAsync( subPayload, "omit=displayValue" ).Result;
+
+          // put them in our bucket
+          newObjects.AddRange( res.Resources );
+          this.Message = SNJ.JsonConvert.SerializeObject( String.Format( "{0}/{1}", i, payload.Length ) );
+        }
+
         foreach ( var obj in newObjects )
         {
-          LocalContext.AddCachedObject( obj, Client.BaseUrl );
+          var matches = Client.Stream.Objects.FindAll( o => o._id == obj._id );
+
+          //TODO: Do this efficiently, this is rather brute force
+          for ( int i = Client.Stream.Objects.Count - 1; i >= 0; i-- )
+          {
+            if ( Client.Stream.Objects[ i ]._id == obj._id )
+            {
+              Client.Stream.Objects[ i ] = obj;
+            }
+          }
         }
-      } );
 
-      // set ports
-      UpdateOutputStructure();
+        // add objects to cache async
+        Task.Run( ( ) =>
+        {
+          foreach ( var obj in newObjects )
+          {
+            LocalContext.AddCachedObject( obj, Client.BaseUrl );
+          }
+        } );
 
-      this.Message = "Converting...";
+        // set ports
+        UpdateOutputStructure();
 
-      SpeckleObjects.Clear();
+        this.Message = "Converting...";
 
-      Task.Run( ( ) =>
-       {
-         ConvertedObjects = SpeckleCore.Converter.Deserialise( Client.Stream.Objects );
-         IsUpdating = false;
-         Rhino.RhinoApp.InvokeOnUiThread( expireComponentAction );
+        SpeckleObjects.Clear();
 
-         this.Message = "Got data\n@" + DateTime.Now.ToString( "hh:mm:ss" );
-       } );
+        Task.Run( ( ) =>
+         {
+           ConvertedObjects = SpeckleCore.Converter.Deserialise( Client.Stream.Objects );
+           IsUpdating = false;
+           Rhino.RhinoApp.InvokeOnUiThread( expireComponentAction );
+
+           this.Message = "Got data\n@" + DateTime.Now.ToString( "hh:mm:ss" );
+         } );
+
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+        throw;
+      }
+      finally
+      {
+        IsUpdating = false;
+      }
     }
 
     public virtual void UpdateMeta( )
@@ -423,6 +476,21 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance( IGH_DataAccess DA )
     {
+      if(AccountRequired)
+      {
+        Account acc = null;
+        if (!DA.GetData(1, ref acc))
+          return;
+
+        if(acc != account)
+        {
+          account = acc;
+          RestApi = account.RestApi;
+          AuthToken = account.Token;
+          UpdateClient(RestApi, AuthToken);
+        }
+      }
+
       if ( Paused )
       {
         SetObjects( DA );
@@ -560,7 +628,8 @@ namespace SpeckleGrasshopper
       base.DrawViewportMeshes( args );
       if ( this.Hidden || this.Locked ) return;
 
-      foreach ( var obj in ConvertedObjects )
+      if (ConvertedObjects != null)
+        foreach ( var obj in ConvertedObjects )
       {
         //if(obj is Rhino.DocObject) { 
         //obj.GetType();
@@ -576,6 +645,7 @@ namespace SpeckleGrasshopper
       if ( this.Hidden || this.Locked ) return;
       System.Drawing.Color solidClr = !this.Attributes.Selected ? args.ShadeMaterial.Diffuse : args.ShadeMaterial_Selected.Diffuse;
 
+      if(ConvertedObjects != null)
       foreach ( var obj in ConvertedObjects )
       {
         if ( !( obj is GeometryBase ) ) continue;

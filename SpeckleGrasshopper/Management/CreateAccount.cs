@@ -36,7 +36,7 @@ namespace SpeckleGrasshopper.Management
     /// </summary>
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddBooleanParameter("Account", "A", "Account object to use with senders / receivers", GH_ParamAccess.item);
+      pManager.AddGenericParameter("Account", "A", "Account object to use with senders / receivers", GH_ParamAccess.item);
     }
 
     /// <summary>
