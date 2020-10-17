@@ -62,8 +62,8 @@ namespace SpeckleGrasshopper
     public string State;
 
     public GhSenderClient( )
-      : base( "Data Sender", "DS",
-          "Sends data to Speckle. (cx)",
+      : base( "    Data Sender", "DS",
+          "Sends data to Speckle.",
           "Speckle", "   Server" )
     {
       SpeckleCore.SpeckleInitializer.Initialize();

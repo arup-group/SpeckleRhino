@@ -32,10 +32,8 @@ namespace SpeckleGrasshopper
       SpeckleCore.LocalContext.Init();
       SelectedType = null;
     }
-    public override Grasshopper.Kernel.GH_Exposure Exposure
-    {
-      get { return GH_Exposure.hidden; }
-    }
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+
 
     /// <summary>
     /// Registers all the input parameters for this component.

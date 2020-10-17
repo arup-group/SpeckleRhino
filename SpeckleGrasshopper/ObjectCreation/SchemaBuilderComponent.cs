@@ -31,7 +31,7 @@ namespace SpeckleGrasshopper.UserDataUtils
     private GH_Document _document;
 
     public SchemaBuilderComponent()
-      : base("Schema Builder Component", "SBC",
+      : base("  Schema Builder Component", "SBC",
               "Build a SpeckleObject by selecting a type from your installed SpeckleKits.",
               "Speckle", "  Create Objects")
     {

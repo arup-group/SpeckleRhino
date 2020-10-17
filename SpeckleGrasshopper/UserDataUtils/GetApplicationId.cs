@@ -26,6 +26,7 @@ namespace SpeckleGrasshopper
           "Speckle", "Advanced")
     {
     }
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     /// <summary>
     /// Registers all the input parameters for this component.

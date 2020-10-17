@@ -22,7 +22,7 @@ namespace SpeckleGrasshopper.Management
     Account Selected;
     Action ExpireComponent;
 
-    public ListMyAccounts( ) : base( "Accounts", "Accounts", "Lists your existing Speckle accounts.", "Speckle", "   Server" )
+    public ListMyAccounts( ) : base( "   Accounts", "Accounts", "Lists your existing Speckle accounts.", "Speckle", "   Server" )
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

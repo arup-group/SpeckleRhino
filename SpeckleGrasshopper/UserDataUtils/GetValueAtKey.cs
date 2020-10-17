@@ -26,12 +26,8 @@ namespace SpeckleGrasshopper
         {
         }
 
-        public override Grasshopper.Kernel.GH_Exposure Exposure
-        {
-          get { return GH_Exposure.hidden; }
-        }
-
-        public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
         {
             base.AppendAdditionalMenuItems(menu);
         }

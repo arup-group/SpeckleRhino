@@ -16,7 +16,7 @@ using Rhino.PlugIns;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Speckle")]
 [assembly: AssemblyProduct("Speckle")]
-[assembly: AssemblyCopyright("Copyright Speckle Contributors © 2016-2020")]
+[assembly: AssemblyCopyright("Copyright Speckle.Works & Community Contributors © 2016-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

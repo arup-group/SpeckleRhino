@@ -20,7 +20,7 @@ namespace SpeckleGrasshopper
     /// Initializes a new instance of the CreateUserData class.
     /// </summary>
     public CreateUserData( )
-      : base( "Create Custom User Data", "CUD",
+      : base( "   Create Custom User Data", "CUD",
           "Creates a custom user dictionary which you can nest in another dictionary.",
           "Speckle", " Properties")
     {
