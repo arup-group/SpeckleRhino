@@ -187,7 +187,7 @@ namespace SpeckleGrasshopper
         this.AddRuntimeMessage( GH_RuntimeMessageLevel.Error, e.EventName + ": " + e.EventData );
       };
 
-      expireComponentAction = ( ) => this.ExpireSolution( true );
+      expireComponentAction = () => ExpireSolution(true);
     }
 
     public override void AppendAdditionalMenuItems( ToolStripDropDown menu )
@@ -420,7 +420,6 @@ namespace SpeckleGrasshopper
       catch (Exception e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
-        throw;
       }
       finally
       {
