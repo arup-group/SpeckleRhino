@@ -22,7 +22,7 @@ namespace SpeckleGrasshopper.Management
 
     Action ExpireComponent;
 
-    public ListStreams() : base(" Streams", "Streams", "Lists your existing Speckle streams for a specified account.", "Speckle", "   Server")
+    public ListStreams() : base("\u200BStreams", "Streams", "Lists your existing Speckle streams for a specified account.", "Speckle", "   Server")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

@@ -52,7 +52,7 @@ namespace SpeckleGrasshopper
     public bool IsUpdating = false;
 
     public GhReceiverClient( )
-      : base( "     Data Receiver", "DR",
+      : base("\u200B\u200B\u200B\u200B\u200BData Receiver", "DR",
           "Receives data from Speckle.",
           "Speckle", "   Server" )
     {

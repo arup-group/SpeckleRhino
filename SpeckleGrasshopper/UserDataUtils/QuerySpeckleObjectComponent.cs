@@ -12,9 +12,9 @@ namespace SpeckleGrasshopper
     /// Initializes a new instance of the MyComponent1 class.
     /// </summary>
     public QuerySpeckleObjectComponent()
-      : base("     Query Speckle Object", "QSO",
+      : base("\u200B\u200B\u200B\u200B\u200BQuery Speckle Object", "QSO",
           "Gets a value from a Speckle Object by string of concatenated keys. \n For example, 'ApplicationId'," +
-          " 'Properties.parameters.Description', or 'Properites.structural.propertyRef",
+          " 'Properties.parameters.Description', or 'Properites.structural.propertyRef'",
           "Speckle", " Properties")
     {
     }

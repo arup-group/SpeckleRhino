@@ -62,7 +62,7 @@ namespace SpeckleGrasshopper
     public string State;
 
     public GhSenderClient( )
-      : base( "    Data Sender", "DS",
+      : base("\u200B\u200B\u200B\u200BData Sender", "DS",
           "Sends data to Speckle.",
           "Speckle", "   Server" )
     {

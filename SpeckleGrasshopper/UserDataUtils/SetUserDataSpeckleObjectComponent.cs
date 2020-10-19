@@ -16,7 +16,7 @@ namespace SpeckleGrasshopper.UserDataUtils
     /// Initializes a new instance of the SetUserDataSpeckleObjectComponent class.
     /// </summary>
     public SetUserDataSpeckleObjectComponent()
-      : base(" Set User Data Speckle Object", "SUDSO",
+      : base("\u200BSet User Data Speckle Object", "SUDSO",
           "Sets user data to a Speckle Object. Be careful - this completely replaced all data in the 'Properties' of the input speckle object.",
           "Speckle", " Properties")
     {

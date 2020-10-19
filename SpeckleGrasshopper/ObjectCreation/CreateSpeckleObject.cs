@@ -19,7 +19,7 @@ namespace SpeckleGrasshopper
     private Timer Debouncer;
 
     public CreateSpeckleObject()
-      : base(" Create a Generic Speckle Object", "CGO",
+      : base("\u200BCreate a Generic Speckle Object", "CGO",
           "Creates a Generic speckle object with custom properties. The properties you define are stored in the Speckle Object's 'Properties' dictionary.",
           "Speckle", "  Create Objects")
     {
