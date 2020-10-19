@@ -14,6 +14,8 @@ namespace SpeckleGrasshopper
 {
   public class ExpandUserDataComponent : GH_Component, IGH_VariableParameterComponent
   {
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+
     Dictionary<string, List<object>> global;
     Action expireComponent, setInputsAndExpireComponent;
 
@@ -57,8 +59,6 @@ namespace SpeckleGrasshopper
               this.ExpireSolution( true );
       };
     }
-
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
 
     public override void AddedToDocument( GH_Document document )

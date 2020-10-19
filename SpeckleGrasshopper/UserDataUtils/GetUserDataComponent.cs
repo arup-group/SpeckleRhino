@@ -22,15 +22,12 @@ namespace SpeckleGrasshopper
         {
         }
 
-        public override Grasshopper.Kernel.GH_Exposure Exposure
-        {
-          get { return GH_Exposure.hidden; }
-        }
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-       /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+    /// <summary>
+    /// Registers all the input parameters for this component.
+    /// </summary>
+    protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Object", "O", "Object to expand user dictionary of.", GH_ParamAccess.item);
         }

@@ -32,7 +32,7 @@ namespace SpeckleGrasshopper
     public bool CheckItAll = false;
 
     public ModifySpeckleObjectProperties( )
-      : base("\u200B\u200B\u200B\u200BModifies SpeckleObject Properties", "MSOP",
+      : base("\u200B\u200B\u200B\u200BModifies Properties", "MP",
         "Allows properties of a SpeckleObject to be modified.",
         "Speckle", " Properties")
     {

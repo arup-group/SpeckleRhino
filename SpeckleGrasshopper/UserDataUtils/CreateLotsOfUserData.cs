@@ -14,9 +14,9 @@ namespace SpeckleGrasshopper
   {
 
     public CreateLotsOfUserData( )
-      : base("\u200B\u200BCreate Lots of Custom User Data", "CLUD",
-          "Creates a custom user dictionary using lists of keys and values.",
-          "Speckle", " Properties")
+      : base("\u200B\u200BCreate Properties by List", "CPL",
+          "Creates Speckle Object properties using a list of keys and a list of values.",
+          "Speckle", "Advanced")
     {
     }
 
