@@ -24,12 +24,8 @@ namespace SpeckleGrasshopper.Management
     /// </summary>
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddIntegerParameter("AccountId", "id", "AccountId", GH_ParamAccess.item);
-      pManager.AddTextParameter("ServerName", "S", "The name of the server", GH_ParamAccess.item);
       pManager.AddTextParameter("RestApi", "R", "The address of the API, ex. https://hestia.speckle.works/api", GH_ParamAccess.item);
-      pManager.AddTextParameter("Email", "E", "The email you used to register", GH_ParamAccess.item);
       pManager.AddTextParameter("Token", "T", "The token used to authenticate you, you can find it in your Profile page", GH_ParamAccess.item);
-      pManager.AddBooleanParameter("IsDefault", "D", "IsDefault", GH_ParamAccess.item);
     }
 
     /// <summary>
@@ -46,33 +42,17 @@ namespace SpeckleGrasshopper.Management
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      int accountId = 0;
-      if (!DA.GetData(0, ref accountId))
-        return;
-      string serverName = "";
-      if (!DA.GetData(1, ref serverName))
-        return;
       string restApi = "";
-      if (!DA.GetData(2, ref restApi))
-        return;
-      string email = "";
-      if (!DA.GetData(3, ref email))
+      if (!DA.GetData(0, ref restApi))
         return;
       string token = "";
-      if (!DA.GetData(4, ref token))
-        return;
-      bool isDefault = false;
-      if (!DA.GetData(5, ref isDefault))
+      if (!DA.GetData(1, ref token))
         return;
 
       DA.SetData(0, new Account()
       {
-        AccountId = accountId,
-        ServerName = serverName,
         RestApi = restApi,
-        Email = email,
         Token = token,
-        IsDefault = isDefault,
       });
     }
 
