@@ -21,8 +21,9 @@ namespace SpeckleGrasshopper.Management
     List<Account> Accounts = new List<Account>();
     Account Selected;
     Action ExpireComponent;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
 
-    public ListMyAccounts( ) : base("\u200B\u200B\u200BAccounts", "Accounts", "Lists your existing Speckle accounts.", "Speckle", "   Server" )
+    public ListMyAccounts( ) : base("Accounts", "Accounts", "Lists your existing Speckle accounts.", "Speckle", "   Server" )
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

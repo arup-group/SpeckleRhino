@@ -60,9 +60,9 @@ namespace SpeckleGrasshopper
     public bool ManualMode = false, DebouncingDisabled = false;
 
     public string State;
-
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     public GhSenderClient( )
-      : base("\u200B\u200B\u200B\u200BData Sender", "DS",
+      : base("Data Sender", "DS",
           "Sends data to Speckle.",
           "Speckle", "   Server" )
     {
