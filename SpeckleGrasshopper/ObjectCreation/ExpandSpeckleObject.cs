@@ -23,9 +23,9 @@ namespace SpeckleGrasshopper
     /// Initializes a new instance of the MyComponent1 class.
     /// </summary>
     public ExpandSpeckleObject()
-      : base("Expand Dictionary or SpeckleObject", "EUD",
-          "Expands a SpeckleObject's properties or a dictionary into its component key value pairs.",
-          "Speckle", "Special")
+      : base("Expand Dictionary or SpeckleObject.Properties", "EUD",
+          "Expands a SpeckleObject's 'Properties' or a dictionary into its component key value pairs.",
+          "Speckle", "Advanced")
     {
     }
 

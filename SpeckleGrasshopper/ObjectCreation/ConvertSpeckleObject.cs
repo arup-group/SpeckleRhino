@@ -21,17 +21,19 @@ namespace SpeckleGrasshopper
 {
   public class ConvertSpeckleObject : GH_Component
   {
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     private Type SelectedType;
 
     public ConvertSpeckleObject()
       : base("Converts a Speckle Object", "CVSO",
         "Converts Speckle objects into another.",
-        "Speckle", "SpeckleKits")
+        "Speckle", "Creating Objects")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();
       SelectedType = null;
     }
+
 
     /// <summary>
     /// Registers all the input parameters for this component.

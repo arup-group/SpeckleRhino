@@ -60,11 +60,11 @@ namespace SpeckleGrasshopper
     public bool ManualMode = false, DebouncingDisabled = false;
 
     public string State;
-
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     public GhSenderClient( )
-      : base( "Data Sender", "Anonymous Stream",
+      : base("Data Sender", "DS",
           "Sends data to Speckle.",
-          "Speckle", "I/O" )
+          "Speckle", "   Server" )
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

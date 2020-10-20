@@ -14,6 +14,8 @@ namespace SpeckleGrasshopper
 {
   public class ExpandUserDataComponent : GH_Component, IGH_VariableParameterComponent
   {
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+
     Dictionary<string, List<object>> global;
     Action expireComponent, setInputsAndExpireComponent;
 
@@ -23,7 +25,7 @@ namespace SpeckleGrasshopper
     public ExpandUserDataComponent( )
       : base( "Expand User Data", "EUD",
           "Expands user dictionaries into their component keys (if matching).",
-          "Speckle", "User Data Utils" )
+          "Speckle", "Speckle Object Data")
     {
       expireComponent = ( ) =>
       {
@@ -57,6 +59,7 @@ namespace SpeckleGrasshopper
               this.ExpireSolution( true );
       };
     }
+
 
     public override void AddedToDocument( GH_Document document )
     {
