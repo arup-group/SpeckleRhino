@@ -18,9 +18,9 @@ namespace SpeckleGrasshopper.Management
     SpeckleApiClient Client = new SpeckleApiClient();
     Project SelectedProject = null;
     Action ExpireComponent;
-
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
     public ListMyProjects()
-      : base("\u200B\u200BProjects", "Projects", "Lists projects you own or have access to", "Speckle", "   Server")
+      : base("Projects", "Projects", "Lists projects you own or have access to", "Speckle", "   Server")
     {
       SpeckleInitializer.Initialize();
       LocalContext.Init();

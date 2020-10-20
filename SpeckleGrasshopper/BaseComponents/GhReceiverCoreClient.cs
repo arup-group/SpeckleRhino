@@ -50,9 +50,9 @@ namespace SpeckleGrasshopper
     System.Timers.Timer StreamIdChanger;
 
     public bool IsUpdating = false;
-
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     public GhReceiverClient( )
-      : base("\u200B\u200B\u200B\u200B\u200BData Receiver", "DR",
+      : base("Data Receiver", "DR",
           "Receives data from Speckle.",
           "Speckle", "   Server" )
     {

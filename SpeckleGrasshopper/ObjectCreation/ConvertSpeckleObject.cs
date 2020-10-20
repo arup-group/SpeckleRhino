@@ -21,6 +21,7 @@ namespace SpeckleGrasshopper
 {
   public class ConvertSpeckleObject : GH_Component
   {
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     private Type SelectedType;
 
     public ConvertSpeckleObject()
@@ -32,7 +33,6 @@ namespace SpeckleGrasshopper
       SpeckleCore.LocalContext.Init();
       SelectedType = null;
     }
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
 
     /// <summary>
