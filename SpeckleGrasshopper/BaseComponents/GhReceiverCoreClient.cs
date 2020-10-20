@@ -281,6 +281,7 @@ namespace SpeckleGrasshopper
         {
           Name = "Account",
           NickName = "Ac", 
+          Description = "An Account object, find it either from \"List my Accounts\" component or \"Create Account\"",
           Access = GH_ParamAccess.item,        
         });
         Params.OnParametersChanged();

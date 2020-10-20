@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using SpeckleCore;
+using SpeckleGrasshopper.Properties;
 
 namespace SpeckleGrasshopper.Management
 {
@@ -14,7 +15,7 @@ namespace SpeckleGrasshopper.Management
     public CreateAccount()
       : base("CreateAccount", "CA",
           "Create an Account object for speckle, this will not create the account online but will help you specify what account you want to use when uploading or downloading data from the senders / receivers",
-          "Speckle", "Management")
+          "Speckle", "Advanced")
     {
     }
 
@@ -24,10 +25,10 @@ namespace SpeckleGrasshopper.Management
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddIntegerParameter("AccountId", "id", "AccountId", GH_ParamAccess.item);
-      pManager.AddTextParameter("ServerName", "S", "ServerName", GH_ParamAccess.item);
-      pManager.AddTextParameter("RestApi", "R", "RestApi", GH_ParamAccess.item);
-      pManager.AddTextParameter("Email", "E", "Email", GH_ParamAccess.item);
-      pManager.AddTextParameter("Token", "T", "Token", GH_ParamAccess.item);
+      pManager.AddTextParameter("ServerName", "S", "The name of the server", GH_ParamAccess.item);
+      pManager.AddTextParameter("RestApi", "R", "The address of the API, ex. https://hestia.speckle.works/api", GH_ParamAccess.item);
+      pManager.AddTextParameter("Email", "E", "The email you used to register", GH_ParamAccess.item);
+      pManager.AddTextParameter("Token", "T", "The token used to authenticate you, you can find it in your Profile page", GH_ParamAccess.item);
       pManager.AddBooleanParameter("IsDefault", "D", "IsDefault", GH_ParamAccess.item);
     }
 
@@ -36,7 +37,7 @@ namespace SpeckleGrasshopper.Management
     /// </summary>
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddGenericParameter("Account", "A", "Account object to use with senders / receivers", GH_ParamAccess.item);
+      pManager.AddGenericParameter("Account", "A", "Account object to use with receivers", GH_ParamAccess.item);
     }
 
     /// <summary>
