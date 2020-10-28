@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
@@ -23,9 +24,12 @@ namespace SpeckleGrasshopper
 {
   public class GhSenderClient : GH_Component, IGH_VariableParameterComponent
   {
+    Account account;
     public string Log { get; set; }
     public OrderedDictionary JobQueue;
-    private string RestApi;
+    private string RestApi { get; set; }
+    private string Token { get; set; }
+
     private string StreamId;
 
     public Action ExpireComponentAction;
@@ -143,22 +147,18 @@ namespace SpeckleGrasshopper
         Locked = true;
         NickName = "Initialising";
 
-        Account account = null;
+        Account _account = null;
         try
         {
-          account = LocalContext.GetDefaultAccount();
-          RestApi = account.RestApi;
-          Client = new SpeckleApiClient(account.RestApi);
-          Client.IntializeSender(account.Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
-        {
-          Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
-        });
+          _account = LocalContext.GetDefaultAccount();
+          account = _account;
+          InitializeClient(account);
         }
         catch (Exception err)
         {
         }
 
-        if (account == null)
+        if (_account == null)
         {
           var signInWindow = new SpecklePopup.SignInWindow(true);
           var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
@@ -168,13 +168,9 @@ namespace SpeckleGrasshopper
 
           if (signInWindow.AccountListBox.SelectedIndex != -1)
           {
-            account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-            RestApi = account.RestApi;
-            Client = new SpeckleApiClient(account.RestApi);
-            Client.IntializeSender(account.Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
-          {
-           Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
-          });
+            _account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
+            account = _account;
+            InitializeClient(account);
           }
           else
           {
@@ -230,6 +226,22 @@ namespace SpeckleGrasshopper
       ObjectCache = new Dictionary<string, SpeckleObject>();
 
       Grasshopper.Instances.DocumentServer.DocumentRemoved += DocumentServer_DocumentRemoved;
+    }
+
+    private void InitializeClient(Account account)
+    {
+      RestApi = account.RestApi;
+      Token = account.Token;
+      InitializeClient(RestApi, Token);
+    }
+
+    private void InitializeClient(string RestApi, string Token)
+    {
+      Client = new SpeckleApiClient(RestApi);
+      Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
+      {
+        Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
+      });
     }
 
     private void DocumentServer_DocumentRemoved(GH_DocumentServer sender, GH_Document doc)
@@ -568,6 +580,15 @@ namespace SpeckleGrasshopper
         projectId = vs;
       if (project == null && projectId == "")
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
+      Account _account = null;
+      if (AccountRequired && DA.GetData(1, ref _account))
+      {
+        if (account != _account)
+        {
+          account = _account;
+          InitializeClient(account);
+        }
+      }
 
       if (Client == null)
       {
@@ -1056,7 +1077,7 @@ namespace SpeckleGrasshopper
       int count = 0;
       foreach (IGH_Param myParam in Params.Input)
       {
-        if (count == 0)
+        if (count == 0 || (AccountRequired && count == 1))
         {
           count++;
           continue;
