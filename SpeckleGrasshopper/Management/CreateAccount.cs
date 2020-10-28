@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using SpeckleCore;
@@ -9,6 +12,9 @@ namespace SpeckleGrasshopper.Management
 {
   public class CreateAccount : GH_Component
   {
+    public static bool HasGlobalAccount { get; private set; } = false;
+    private bool GlobalOn = false;
+    public static Account GlobalAccount { get; private set; } = null;
     /// <summary>
     /// Initializes a new instance of the CreateAccount class.
     /// </summary>
@@ -36,6 +42,41 @@ namespace SpeckleGrasshopper.Management
       pManager.AddGenericParameter("Account", "A", "Account object to use with receivers", GH_ParamAccess.item);
     }
 
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendSeparator(menu);
+      Menu_AppendItem(menu, "Make Global", OnAccountGlobal, true, GlobalOn);
+    }
+
+    public override void AddedToDocument(GH_Document document)
+    {
+      base.AddedToDocument(document);
+      if (document.Objects.Where(x => x.ComponentGuid == this.ComponentGuid).Count() > 1)
+      {
+        document.RemoveObject(Attributes, false);
+      }
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      writer.SetBoolean("IsGlobal", GlobalOn);
+      return base.Write(writer);
+    }
+    public override bool Read(GH_IReader reader)
+    {
+      GlobalOn = reader.GetBoolean("IsGlobal");
+      return base.Read(reader);
+    }
+
+    private void OnAccountGlobal(object sender, EventArgs e)
+    {
+      HasGlobalAccount = !HasGlobalAccount;
+      GlobalOn = !GlobalOn;
+
+      ExpireSolution(true);
+    }
+
     /// <summary>
     /// This is the method that actually does the work.
     /// </summary>
@@ -49,11 +90,15 @@ namespace SpeckleGrasshopper.Management
       if (!DA.GetData(1, ref token))
         return;
 
-      DA.SetData(0, new Account()
+      var account = new Account()
       {
         RestApi = restApi,
         Token = token,
-      });
+      };
+
+      GlobalAccount = HasGlobalAccount ? account : null;
+
+      DA.SetData(0, account);
     }
 
     /// <summary>
