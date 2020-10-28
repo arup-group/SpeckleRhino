@@ -18,6 +18,7 @@ using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
+using SpeckleGrasshopper.Management;
 using SpeckleGrasshopper.Properties;
 
 namespace SpeckleGrasshopper
@@ -581,11 +582,21 @@ namespace SpeckleGrasshopper
       if (project == null && projectId == "")
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
       Account _account = null;
-      if (AccountRequired && DA.GetData(1, ref _account))
+      if (!CreateAccount.HasGlobalAccount && AccountRequired && DA.GetData(1, ref _account))
       {
         if (account != _account)
         {
           account = _account;
+          InitializeClient(account);
+        }
+      }
+
+      if(CreateAccount.HasGlobalAccount)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using Global account");
+        if(account != CreateAccount.GlobalAccount)
+        {
+          account = CreateAccount.GlobalAccount;
           InitializeClient(account);
         }
       }
@@ -1051,6 +1062,11 @@ namespace SpeckleGrasshopper
         Layers = BucketLayers
       };
 
+      if (Client.StreamId == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid client, check account credentials");
+        return;
+      }
       var updateResult = Client.StreamUpdateAsync(Client.StreamId, updateStream).Result;
 
       Log += updateResult.Message;

@@ -127,22 +127,7 @@ namespace SpeckleGrasshopper
         {
         }
 
-        if (account == null)
-        {
-          var signInWindow = new SpecklePopup.SignInWindow(true);
-          var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
-          helper.Owner = Rhino.RhinoApp.MainWindowHandle();
-
-          signInWindow.ShowDialog();
-
-          if (signInWindow.AccountListBox.SelectedIndex != -1)
-            account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-          else
-          {
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Account selection failed.");
-            return;
-          }
-        }
+        SignInWindow();
 
         RestApi = account.RestApi;
         AuthToken = account.Token;
@@ -154,6 +139,26 @@ namespace SpeckleGrasshopper
         AutoReset = false
       };
       StreamIdChanger.Elapsed += ChangeStreamId;
+    }
+
+    private void SignInWindow()
+    {
+      if (account == null)
+      {
+        var signInWindow = new SpecklePopup.SignInWindow(true);
+        var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
+        helper.Owner = Rhino.RhinoApp.MainWindowHandle();
+
+        signInWindow.ShowDialog();
+
+        if (signInWindow.AccountListBox.SelectedIndex != -1)
+          account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
+        else
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Account selection failed.");
+          return;
+        }
+      }
     }
 
     private void ChangeStreamId(object sender, System.Timers.ElapsedEventArgs e)
@@ -339,6 +344,11 @@ namespace SpeckleGrasshopper
 
       try
       {
+        if(Client == null)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Client is missing");
+          throw new Exception("While updating global, Client was null");
+        }  
         var getStream = Client.StreamGetAsync(Client.StreamId, null).Result;
 
         NickName = getStream.Resource.Name;
@@ -475,7 +485,7 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (AccountRequired)
+      if (AccountRequired && !SpeckleGrasshopper.Management.CreateAccount.HasGlobalAccount)
       {
         Account acc = null;
         if (!DA.GetData(1, ref acc))
@@ -489,6 +499,21 @@ namespace SpeckleGrasshopper
           UpdateClient(RestApi, AuthToken);
         }
       }
+
+      if (SpeckleGrasshopper.Management.CreateAccount.HasGlobalAccount)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using Global account");
+        if (account != SpeckleGrasshopper.Management.CreateAccount.GlobalAccount)
+        {
+          account = SpeckleGrasshopper.Management.CreateAccount.GlobalAccount;
+          RestApi = account.RestApi;
+          AuthToken = account.Token;
+          UpdateClient(RestApi, AuthToken);
+        }
+      }
+
+      if(account == null)
+        SignInWindow();
 
       if (Paused)
       {
