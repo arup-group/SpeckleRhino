@@ -127,7 +127,10 @@ namespace SpeckleGrasshopper
         {
         }
 
-        SignInWindow();
+        if (account == null)
+        {
+          account = GhSenderClient.SignInWindow();
+        }
 
         RestApi = account.RestApi;
         AuthToken = account.Token;
@@ -141,25 +144,6 @@ namespace SpeckleGrasshopper
       StreamIdChanger.Elapsed += ChangeStreamId;
     }
 
-    private void SignInWindow()
-    {
-      if (account == null)
-      {
-        var signInWindow = new SpecklePopup.SignInWindow(true);
-        var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
-        helper.Owner = Rhino.RhinoApp.MainWindowHandle();
-
-        signInWindow.ShowDialog();
-
-        if (signInWindow.AccountListBox.SelectedIndex != -1)
-          account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-        else
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Account selection failed.");
-          return;
-        }
-      }
-    }
 
     private void ChangeStreamId(object sender, System.Timers.ElapsedEventArgs e)
     {
@@ -287,7 +271,7 @@ namespace SpeckleGrasshopper
           Description = "An Account object, find it either from \"List my Accounts\" component or \"Create Account\"",
           Access = GH_ParamAccess.item,
           Optional = true,
-        }) ;
+        });
         Params.OnParametersChanged();
         ExpireSolution(false);
       }
@@ -344,11 +328,11 @@ namespace SpeckleGrasshopper
 
       try
       {
-        if(Client == null)
+        if (Client == null)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Client is missing");
           throw new Exception("While updating global, Client was null");
-        }  
+        }
         var getStream = Client.StreamGetAsync(Client.StreamId, null).Result;
 
         NickName = getStream.Resource.Name;
@@ -512,8 +496,13 @@ namespace SpeckleGrasshopper
         }
       }
 
-      if(account == null)
-        SignInWindow();
+      if (account == null)
+      {
+        account = GhSenderClient.SignInWindow();
+        RestApi = account.RestApi;
+        AuthToken = account.Token;
+        UpdateClient(RestApi, AuthToken);
+      }
 
       if (Paused)
       {
@@ -524,7 +513,11 @@ namespace SpeckleGrasshopper
       string inputId = null;
       DA.GetData(0, ref inputId);
 
-      if (inputId == null && StreamId == null) return;
+      if (inputId == null && StreamId == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Both id is null");
+        return;
+      }
 
       if (inputId != StreamId)
       {
@@ -543,7 +536,11 @@ namespace SpeckleGrasshopper
         return;
       }
 
-      if (!Client.IsConnected) return;
+      if (!Client.IsConnected)
+      {
+        this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Client hasn't connected");
+        return;
+      }
 
       if (Expired) { Expired = false; UpdateGlobal(); return; }
 

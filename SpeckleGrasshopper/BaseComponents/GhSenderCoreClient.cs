@@ -20,6 +20,7 @@ using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
 using SpeckleGrasshopper.Management;
 using SpeckleGrasshopper.Properties;
+using SpecklePopup;
 
 namespace SpeckleGrasshopper
 {
@@ -161,23 +162,8 @@ namespace SpeckleGrasshopper
 
         if (_account == null)
         {
-          var signInWindow = new SpecklePopup.SignInWindow(true);
-          var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
-          helper.Owner = Rhino.RhinoApp.MainWindowHandle();
-
-          signInWindow.ShowDialog();
-
-          if (signInWindow.AccountListBox.SelectedIndex != -1)
-          {
-            _account = signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-            account = _account;
-            InitializeClient(account);
-          }
-          else
-          {
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Account selection failed.");
-            return;
-          }
+          account = SignInWindow();
+          InitializeClient(account);
         }
       }
       else
@@ -227,6 +213,24 @@ namespace SpeckleGrasshopper
       ObjectCache = new Dictionary<string, SpeckleObject>();
 
       Grasshopper.Instances.DocumentServer.DocumentRemoved += DocumentServer_DocumentRemoved;
+    }
+
+    public static Account SignInWindow()
+    {
+      var signInWindow = new SpecklePopup.SignInWindow(true);
+      var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
+      helper.Owner = Rhino.RhinoApp.MainWindowHandle();
+
+      signInWindow.ShowDialog();
+
+      if (signInWindow.AccountListBox.SelectedIndex != -1)
+      {
+        return signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
+      }
+      else
+      {
+        throw new Exception("Account selection failed.");
+      }
     }
 
     private void InitializeClient(Account account)

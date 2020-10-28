@@ -66,6 +66,7 @@ namespace SpeckleGrasshopper.Management
     public override bool Read(GH_IReader reader)
     {
       GlobalOn = reader.GetBoolean("IsGlobal");
+      HasGlobalAccount = GlobalOn;
       return base.Read(reader);
     }
 
