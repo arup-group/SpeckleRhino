@@ -14,15 +14,15 @@ namespace SpeckleGrasshopper
 {
   public class CreateUserData : GH_Component, IGH_VariableParameterComponent
   {
-
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
     private Timer Debouncer;
     /// <summary>
     /// Initializes a new instance of the CreateUserData class.
     /// </summary>
     public CreateUserData( )
-      : base( "Create Custom User Data", "CUD",
-          "Creates a custom user dictionary which you can nest in another dictionary.",
-          "Speckle", "User Data Utils" )
+      : base("Create Properties by Key", "CPK",
+          "Creates Speckle Object properties by assigning values to keys (input parameters).\nZoom into the component to add more keys.",
+          "Speckle", " Properties")
     {
     }
 

@@ -10,18 +10,21 @@ namespace SpeckleGrasshopper.Management
 {
   public class AddStreamsToProject : GH_Component
   {
-    /// <summary>
-    /// Initializes a new instance of the AddStreamsToProject class.
-    /// </summary>
-
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     SpeckleApiClient Client = new SpeckleApiClient();
     Action ExpireComponent;
     List<string> AddedStreamIds = new List<string>();
+
+    /// <summary>
+    /// Initializes a new instance of the AddStreamsToProject class.
+    /// </summary>
     public AddStreamsToProject()
       : base("AddStreamsToProject", "Add Streams","Add a list of streams to a project","Speckle", "Management")
     {
 
     }
+
+
 
     public override void AddedToDocument(GH_Document document)
     {

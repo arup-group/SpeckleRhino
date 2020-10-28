@@ -13,6 +13,8 @@ namespace SpeckleGrasshopper.Contrib
 {
   public class XmlToSpeckleObject : GH_Component
   {
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+
     /// <summary>
     /// Initializes a new instance of the Cmpt_GetPlane class.
     /// </summary>

@@ -12,6 +12,8 @@ namespace SpeckleGrasshopper.Contrib
 {
   public class MeshTexCoords : GH_Component
   {
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+
     /// <summary>
     /// Initializes a new instance of the Cmpt_GetPlane class.
     /// </summary>
@@ -23,6 +25,7 @@ namespace SpeckleGrasshopper.Contrib
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();
     }
+
 
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {

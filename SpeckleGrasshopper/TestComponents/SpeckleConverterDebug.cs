@@ -28,7 +28,7 @@ namespace SpeckleGrasshopper
     public EncodeToSpeckle()
       : base( "Serialiser", "SRL",
           "Serialises a Rhino object to a Speckle object.",
-          "Speckle", "Converters" )
+          "Speckle", "Advanced" )
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();
@@ -93,7 +93,7 @@ namespace SpeckleGrasshopper
     public DecodeFromSpeckle()
       : base( "Deserialiser", "DSR",
           "Deserialises Speckle (geometry) objects to Rhino objects.",
-          "Speckle", "Converters" )
+          "Speckle", "Advanced")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

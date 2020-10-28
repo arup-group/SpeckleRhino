@@ -99,6 +99,9 @@ jobs:
         
       - name: rename gha
         run: Rename-Item -Path SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha -NewName SpeckleGrasshopper-cx.gha
+        
+      - name: copy gha to rhi folder
+        run: Copy-Item SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.gha -Destination SpeckleRhinoPlugin/SpeckleWinR6/bin/Release
           
       - name: zip rhp
         run: Compress-Archive -DestinationPath SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip -Path SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/*
@@ -111,18 +114,8 @@ jobs:
         uses: bruceadams/get-release@v1.2.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        
-      - name: Upload gha
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.gha
-          asset_name: SpeckleGrasshopper-cx.gha
-          asset_content_type: application/octet-stream # its just a binary file (.dll) under the hood
 
-      - name: Upload rhi 
+      - name: Upload rhi # includes gha as well
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -11,7 +11,6 @@ While [SpeckleCore](https://github.com/speckleworks/SpeckleCore) (the .net speck
 
 > The [latest build is here](https://github.com/speckleworks/SpeckleInstaller/releases/latest). Be sure to check out the [getting started guide](https://speckle.works/log/speckle-guide/) to get up to speed with some basics.
 
-
 ## Building Speckle for Rhino
 
 Speckle for Rhino is developed with Visual Studio 2017.
@@ -36,6 +35,12 @@ In order to debug/build Speckle for Rhino:
     *Grasshopper plugin*
     1. Open Grasshopper
     1. Drag&Drop `~/SpekleRhino/Debug/SpeckleGrasshopper.gha` into Grasshopper canvas.
+
+## Creating a Release
+
+Go the 'Releases' page of Github and create a new one. For this repo ensure the version ends with `-cx` e.g. `v1.2.3-cx` to ensure that the tags we create do not clash with the main project.
+
+After the Release is created it will kick off the CI / CD process, which will then upload the correct files into the Release.
 
 ## Common Issues
 1. If during the installation of the `rhp` file you get a "SpeckleKits" missing folder (see #119). Please manually create it in `%localappdata%/SpeckleKits`.

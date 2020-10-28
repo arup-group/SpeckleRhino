@@ -21,8 +21,8 @@ namespace SpeckleGrasshopper.Management
     private bool IncludeHistory;
 
     Action ExpireComponent;
-
-    public ListStreams() : base("Streams", "Streams", "Lists your existing Speckle streams for a specified account.", "Speckle", "Management")
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public ListStreams() : base("Streams", "Streams", "Lists your existing Speckle streams for a specified account.", "Speckle", "   Server")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();

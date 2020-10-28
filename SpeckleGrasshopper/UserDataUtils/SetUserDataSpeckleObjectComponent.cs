@@ -12,13 +12,14 @@ namespace SpeckleGrasshopper.UserDataUtils
 {
   public class SetUserDataSpeckleObjectComponent : GH_Component
   {
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
     /// <summary>
     /// Initializes a new instance of the SetUserDataSpeckleObjectComponent class.
     /// </summary>
     public SetUserDataSpeckleObjectComponent()
-      : base("Set User Data Speckle Object", "SUDSO",
-          "Sets user data to a Speckle Object.",
-          "Speckle", "Special")
+      : base("Set Properties", "SP",
+          "Add properties to a Speckle Object. Be careful - if a property with the same name already exists, it will be overwritten.",
+          "Speckle", " Properties")
     {
     }
 
