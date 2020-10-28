@@ -192,10 +192,11 @@ namespace SpeckleGrasshopper
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
       Menu_AppendSeparator(menu);
 
-      base.AppendAdditionalMenuItems(menu);
       GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamId + ") to clipboard.", (sender, e) =>
        {
          if (StreamId != null)
@@ -280,7 +281,8 @@ namespace SpeckleGrasshopper
           NickName = "Ac",
           Description = "An Account object, find it either from \"List my Accounts\" component or \"Create Account\"",
           Access = GH_ParamAccess.item,
-        });
+          Optional = true,
+        }) ;
         Params.OnParametersChanged();
         ExpireSolution(false);
       }
