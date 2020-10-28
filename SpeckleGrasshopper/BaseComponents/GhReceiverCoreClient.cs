@@ -266,9 +266,6 @@ namespace SpeckleGrasshopper
           System.Windows.MessageBox.Show("Child id copied to clipboard. Share away!");
         });
       }
-
-
-
     }
 
     private void OnAddAccount(object sender, EventArgs e)

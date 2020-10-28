@@ -48,6 +48,8 @@ namespace SpeckleGrasshopper
     private bool WasSerialised = false;
     private bool DocumentIsClosing = false;
     private bool FirstSendUpdate = true;
+    public bool AccountRequired = false;
+
 
     public bool IsSendingUpdate = false;
     private List<SpeckleInput> DefaultSpeckleInputs = null;
@@ -91,6 +93,7 @@ namespace SpeckleGrasshopper
             writer.SetBoolean("remotecontroller", EnableRemoteControl);
             writer.SetBoolean("manualmode", ManualMode);
             writer.SetBoolean("DebouncingDisabled", DebouncingDisabled);
+            writer.SetBoolean("AccountRequired", AccountRequired);
           }
         }
       }
@@ -121,6 +124,7 @@ namespace SpeckleGrasshopper
         reader.TryGetBoolean("remotecontroller", ref EnableRemoteControl);
         reader.TryGetBoolean("manualmode", ref ManualMode);
         reader.TryGetBoolean("DebouncingDisabled", ref DebouncingDisabled);
+        reader.TryGetBoolean("AccountRequired", ref AccountRequired);
       }
       catch (Exception err)
       {
@@ -358,6 +362,7 @@ namespace SpeckleGrasshopper
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
+      Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
       base.AppendAdditionalMenuItems(menu);
       GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamId + ") to clipboard.", (sender, e) =>
       {
@@ -499,6 +504,33 @@ namespace SpeckleGrasshopper
           System.Windows.Clipboard.SetText(childId);
           System.Windows.MessageBox.Show("Child id copied to clipboard. Share away!");
         });
+      }
+    }
+    private void OnAddAccount(object sender, EventArgs e)
+    {
+      AccountRequired = !AccountRequired;
+
+      if (AccountRequired)
+      {
+        Params.Input.Insert(1, new Param_GenericObject()
+        {
+          Name = "Account",
+          NickName = "Ac",
+          Description = "An Account object, find it either from \"List my Accounts\" component or \"Create Account\"",
+          Access = GH_ParamAccess.item,
+        });
+        Params.OnParametersChanged();
+        ExpireSolution(false);
+      }
+      else
+      {
+        var paramMatch = Params.Input.Where(x => x.Name.Equals("Account")).FirstOrDefault();
+        if (paramMatch != null)
+        {
+          Params.Input.Remove(paramMatch);
+          Params.OnParametersChanged();
+          ExpireSolution(false);
+        }
       }
     }
 
@@ -1161,6 +1193,7 @@ namespace SpeckleGrasshopper
     {
       get { return new Guid("{e66e6873-ddcd-4089-93ff-75ae09f8ada3}"); }
     }
+
   }
 }
 
