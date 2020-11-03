@@ -234,22 +234,33 @@ namespace SpeckleGrasshopper
       }
     }
 
-    private void InitializeClient(Account account)
+    private void InitializeClient(Account account, string streamid = null)
     {
       RestApi = account.RestApi;
       Token = account.Token;
-      InitializeClient(RestApi, Token);
+      streamid = streamid;
+      InitializeClient(RestApi, Token, streamid);
     }
 
-    private void InitializeClient(string RestApi, string Token)
+    private void InitializeClient(string RestApi, string Token, string streamid = null)
     {
       Client = new SpeckleApiClient(RestApi);
-      Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
+      if (streamid == null)
       {
-        Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
-        if(Client.Stream == null)
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Missing stream ID");
-      });
+        Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
+        {
+          Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
+          if (Client.Stream == null)
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Missing stream ID");
+        });
+      }
+      else
+      {
+        var stream = Client.StreamGetAsync(streamid, null).Result;
+        Client.Stream = stream.Resource;
+        Client.StreamId = streamid;
+        Client.SetupWebsocket();
+      }
     }
 
     private void DocumentServer_DocumentRemoved(GH_DocumentServer sender, GH_Document doc)
@@ -383,9 +394,6 @@ namespace SpeckleGrasshopper
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
-      //Menu_AppendSeparator(menu);
-      //Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
-      //Menu_AppendSeparator(menu);
 
       GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamId + ") to clipboard.", (sender, e) =>
       {
@@ -535,16 +543,11 @@ namespace SpeckleGrasshopper
       return Params.Input.Where(x => x.Name.Equals("Account")).Count() != 0;
     }
 
-    //private void OnAddAccount(object sender, EventArgs e)
-    //{
-    //  AccountRequired = !AccountRequired;
-
-    //  AddAccount();
-    //}
 
     private void AddAccount()
     {
       var paramsMatch = Params.Input.Where(x => x.Name.Equals("Account"));
+      var paramsStreamMatch = Params.Input.Where(x => x.Name.Equals("StreamId"));
       var paramMatch = paramsMatch.FirstOrDefault();
       if (AccountRequired && paramMatch == null)
       {
@@ -556,6 +559,16 @@ namespace SpeckleGrasshopper
           Access = GH_ParamAccess.item,
           Optional = true,
         });
+
+        Params.Input.Insert(2, new Param_GenericObject()
+        {
+          Name = "StreamId",
+          NickName = "Sid",
+          Description = "Specify the stream Id to use",
+          Access = GH_ParamAccess.item,
+          Optional = true,
+        });
+
         Params.OnParametersChanged();
         ExpireSolution(false);
       }
@@ -564,6 +577,7 @@ namespace SpeckleGrasshopper
         if (paramMatch != null)
         {
           Params.Input.Remove(paramMatch);
+          Params.Input.Remove(paramsStreamMatch.FirstOrDefault());
           Params.OnParametersChanged();
           ExpireSolution(false);
         }
@@ -593,10 +607,10 @@ namespace SpeckleGrasshopper
       var doc = OnPingDocument();
       var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
 
-      if (accountObj.ProvideAccount != AccountRequired || (accountObj.ProvideAccount && !HasAccountAdded()))
+      if (accountObj != null && (accountObj.ProvideAccount != AccountRequired || (accountObj.ProvideAccount && !HasAccountAdded())))
       {
         AccountRequired = accountObj.ProvideAccount;
-        if (!HasAccountAdded())
+        if ((AccountRequired && !HasAccountAdded()) || (!AccountRequired && HasAccountAdded()))
         {
           OnPingDocument().ScheduleSolution(5, d =>
           {
@@ -617,15 +631,22 @@ namespace SpeckleGrasshopper
       if (project == null && projectId == "")
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
       Account _account = null;
-      if (AccountRequired && DA.GetData(1, ref _account))
+      string streamId = null;
+      if (AccountRequired)
       {
-        if (account != _account)
+        if (DA.GetData(1, ref _account) && DA.GetData(2, ref streamId))
         {
-          account = _account;
-          InitializeClient(account);
+          if (account != _account)
+          {
+            account = _account;
+            InitializeClient(account, streamId);
+          }
+        }
+        else
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You need to provide the Account id and the Stream id");
         }
       }
-
       if (Client == null)
       {
         return;
@@ -641,15 +662,16 @@ namespace SpeckleGrasshopper
       DA.SetData(0, Log);
       DA.SetData(1, Client.StreamId);
 
-      if (!Client.IsConnected)
-      {
-        return;
-      }
+      //if (!Client.IsConnected)
+      //{
+      //  AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Client not connected");
+      //  return;
+      //}
 
       if (WasSerialised && FirstSendUpdate)
       {
         FirstSendUpdate = false;
-        return;
+        //return;
       }
 
       State = "Expired";
@@ -1118,7 +1140,7 @@ namespace SpeckleGrasshopper
       int count = 0;
       foreach (IGH_Param myParam in Params.Input)
       {
-        if (count == 0 || (AccountRequired && count == 1))
+        if (count == 0 || (AccountRequired && (count == 1 || count == 2)))
         {
           count++;
           continue;
@@ -1153,7 +1175,7 @@ namespace SpeckleGrasshopper
       int c = 0;
       foreach (var myParam in Params.Input)
       {
-        if (c == 0 || (c == 1 && AccountRequired))
+        if (c == 0 || ((c == 1 || c == 2) && AccountRequired))
         {
           c++;
           continue;
