@@ -18,6 +18,7 @@ using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Special;
 using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
+using SpeckleGrasshopper.ExtendedComponents;
 using SpeckleGrasshopper.Management;
 using SpeckleGrasshopper.Properties;
 using SpecklePopup;
@@ -67,10 +68,10 @@ namespace SpeckleGrasshopper
 
     public string State;
     public override GH_Exposure Exposure => GH_Exposure.primary;
-    public GhSenderClient( )
+    public GhSenderClient()
       : base("Data Sender", "DS",
           "Sends data to Speckle.",
-          "Speckle", "   Server" )
+          "Speckle", "   Server")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();
@@ -246,6 +247,8 @@ namespace SpeckleGrasshopper
       Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
       {
         Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
+        if(Client.Stream == null)
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Missing stream ID");
       });
     }
 
@@ -380,9 +383,9 @@ namespace SpeckleGrasshopper
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
-      Menu_AppendSeparator(menu);
+      //Menu_AppendSeparator(menu);
+      //Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
+      //Menu_AppendSeparator(menu);
 
       GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamId + ") to clipboard.", (sender, e) =>
       {
@@ -527,11 +530,23 @@ namespace SpeckleGrasshopper
       }
     }
 
-    private void OnAddAccount(object sender, EventArgs e)
+    public bool HasAccountAdded()
     {
-      AccountRequired = !AccountRequired;
+      return Params.Input.Where(x => x.Name.Equals("Account")).Count() != 0;
+    }
 
-      if (AccountRequired)
+    //private void OnAddAccount(object sender, EventArgs e)
+    //{
+    //  AccountRequired = !AccountRequired;
+
+    //  AddAccount();
+    //}
+
+    private void AddAccount()
+    {
+      var paramsMatch = Params.Input.Where(x => x.Name.Equals("Account"));
+      var paramMatch = paramsMatch.FirstOrDefault();
+      if (AccountRequired && paramMatch == null)
       {
         Params.Input.Insert(1, new Param_GenericObject()
         {
@@ -546,7 +561,6 @@ namespace SpeckleGrasshopper
       }
       else
       {
-        var paramMatch = Params.Input.Where(x => x.Name.Equals("Account")).FirstOrDefault();
         if (paramMatch != null)
         {
           Params.Input.Remove(paramMatch);
@@ -576,6 +590,23 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      var doc = OnPingDocument();
+      var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
+
+      if (accountObj.ProvideAccount != AccountRequired || (accountObj.ProvideAccount && !HasAccountAdded()))
+      {
+        AccountRequired = accountObj.ProvideAccount;
+        if (!HasAccountAdded())
+        {
+          OnPingDocument().ScheduleSolution(5, d =>
+          {
+            AddAccount();
+          });
+        }
+
+        return;
+      }
+
       project = null;
       projectId = "";
       var p = Params.Input[0].VolatileData.AllData(false).FirstOrDefault();
@@ -586,21 +617,11 @@ namespace SpeckleGrasshopper
       if (project == null && projectId == "")
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
       Account _account = null;
-      if (!CreateAccount.HasGlobalAccount && AccountRequired && DA.GetData(1, ref _account))
+      if (AccountRequired && DA.GetData(1, ref _account))
       {
         if (account != _account)
         {
           account = _account;
-          InitializeClient(account);
-        }
-      }
-
-      if(CreateAccount.HasGlobalAccount)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using Global account");
-        if(account != CreateAccount.GlobalAccount)
-        {
-          account = CreateAccount.GlobalAccount;
           InitializeClient(account);
         }
       }

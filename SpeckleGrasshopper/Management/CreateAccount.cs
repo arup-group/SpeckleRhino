@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
@@ -12,9 +13,7 @@ namespace SpeckleGrasshopper.Management
 {
   public class CreateAccount : GH_Component
   {
-    public static bool HasGlobalAccount { get; private set; } = false;
-    private bool GlobalOn = false;
-    public static Account GlobalAccount { get; private set; } = null;
+
     /// <summary>
     /// Initializes a new instance of the CreateAccount class.
     /// </summary>
@@ -46,36 +45,6 @@ namespace SpeckleGrasshopper.Management
     {
       base.AppendAdditionalMenuItems(menu);
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Make Global", OnAccountGlobal, true, GlobalOn);
-    }
-
-    public override void AddedToDocument(GH_Document document)
-    {
-      base.AddedToDocument(document);
-      if (document.Objects.Where(x => x.ComponentGuid == this.ComponentGuid).Count() > 1)
-      {
-        document.RemoveObject(Attributes, false);
-      }
-    }
-
-    public override bool Write(GH_IWriter writer)
-    {
-      writer.SetBoolean("IsGlobal", GlobalOn);
-      return base.Write(writer);
-    }
-    public override bool Read(GH_IReader reader)
-    {
-      GlobalOn = reader.GetBoolean("IsGlobal");
-      HasGlobalAccount = GlobalOn;
-      return base.Read(reader);
-    }
-
-    private void OnAccountGlobal(object sender, EventArgs e)
-    {
-      HasGlobalAccount = !HasGlobalAccount;
-      GlobalOn = !GlobalOn;
-
-      ExpireSolution(true);
     }
 
     /// <summary>
@@ -97,8 +66,6 @@ namespace SpeckleGrasshopper.Management
         Token = token,
       };
 
-      GlobalAccount = HasGlobalAccount ? account : null;
-
       DA.SetData(0, account);
     }
 
@@ -114,6 +81,7 @@ namespace SpeckleGrasshopper.Management
         return Resources.AddAccount;
       }
     }
+
 
     /// <summary>
     /// Gets the unique ID for this component. Do not change this ID after release.

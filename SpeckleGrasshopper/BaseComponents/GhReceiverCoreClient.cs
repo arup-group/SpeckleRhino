@@ -23,6 +23,7 @@ using Grasshopper.GUI.Canvas;
 using System.Windows.Forms;
 using Grasshopper.GUI;
 using System.Reflection;
+using SpeckleGrasshopper.ExtendedComponents;
 
 namespace SpeckleGrasshopper
 {
@@ -469,7 +470,16 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (AccountRequired && !SpeckleGrasshopper.Management.CreateAccount.HasGlobalAccount)
+      var doc = OnPingDocument();
+      var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
+
+      if(accountObj.ProvideAccount != AccountRequired)
+      {
+        AccountRequired = accountObj.ProvideAccount;
+        OnAddAccount(null, null);
+      }
+
+      if (AccountRequired)
       {
         Account acc = null;
         if (!DA.GetData(1, ref acc))
@@ -484,17 +494,17 @@ namespace SpeckleGrasshopper
         }
       }
 
-      if (SpeckleGrasshopper.Management.CreateAccount.HasGlobalAccount)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using Global account");
-        if (account != SpeckleGrasshopper.Management.CreateAccount.GlobalAccount)
-        {
-          account = SpeckleGrasshopper.Management.CreateAccount.GlobalAccount;
-          RestApi = account.RestApi;
-          AuthToken = account.Token;
-          UpdateClient(RestApi, AuthToken);
-        }
-      }
+      //if (accountObj.GlobalOn)
+      //{
+      //  AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using Global account");
+      //  if (account != accountObj.GlobalOn)
+      //  {
+      //    account = accountObj.GlobalOn;
+      //    RestApi = account.RestApi;
+      //    AuthToken = account.Token;
+      //    UpdateClient(RestApi, AuthToken);
+      //  }
+      //}
 
       if (account == null)
       {
