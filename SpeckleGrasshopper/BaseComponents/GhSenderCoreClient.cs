@@ -33,7 +33,7 @@ namespace SpeckleGrasshopper
     private string RestApi { get; set; }
     private string Token { get; set; }
 
-    private string StreamId;
+    private string StreamId { get; set; }
 
     public Action ExpireComponentAction;
 
@@ -238,7 +238,7 @@ namespace SpeckleGrasshopper
     {
       RestApi = account.RestApi;
       Token = account.Token;
-      streamid = streamid;
+      StreamId = streamid;
       InitializeClient(RestApi, Token, streamid);
     }
 
@@ -256,10 +256,14 @@ namespace SpeckleGrasshopper
       }
       else
       {
-        var stream = Client.StreamGetAsync(streamid, null).Result;
-        Client.Stream = stream.Resource;
-        Client.StreamId = streamid;
-        Client.SetupWebsocket();
+        Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
+        {
+          var stream = Client.StreamGetAsync(streamid, null).Result;
+          Client.Stream = stream.Resource;
+          Client.StreamId = streamid;
+          StreamId = streamid;
+        }
+        );
       }
     }
 
@@ -639,6 +643,7 @@ namespace SpeckleGrasshopper
           if (account != _account)
           {
             account = _account;
+            StreamId = streamId;
             InitializeClient(account, streamId);
           }
         }
@@ -1285,4 +1290,5 @@ namespace SpeckleGrasshopper
 
   }
 }
+
 

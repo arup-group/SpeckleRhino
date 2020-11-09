@@ -52,10 +52,10 @@ namespace SpeckleGrasshopper
 
     public bool IsUpdating = false;
     public override GH_Exposure Exposure => GH_Exposure.primary;
-    public GhReceiverClient( )
+    public GhReceiverClient()
       : base("Data Receiver", "DR",
           "Receives data from Speckle.",
-          "Speckle", "   Server" )
+          "Speckle", "   Server")
     {
       SpeckleCore.SpeckleInitializer.Initialize();
       SpeckleCore.LocalContext.Init();
@@ -183,9 +183,9 @@ namespace SpeckleGrasshopper
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
-      Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
-      Menu_AppendSeparator(menu);
+      //Menu_AppendSeparator(menu);
+      //Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
+      //Menu_AppendSeparator(menu);
 
       GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamId + ") to clipboard.", (sender, e) =>
        {
@@ -259,9 +259,14 @@ namespace SpeckleGrasshopper
       }
     }
 
-    private void OnAddAccount(object sender, EventArgs e)
+    //private void OnAddAccount(object sender, EventArgs e)
+    //{
+    //  AddAccount();
+    //}
+
+    private void AddAccount()
     {
-      AccountRequired = !AccountRequired;
+      //AccountRequired = !AccountRequired;
 
       if (AccountRequired)
       {
@@ -468,15 +473,28 @@ namespace SpeckleGrasshopper
     {
     }
 
+    public bool HasAccountAdded()
+    {
+      return Params.Input.Where(x => x.Name.Equals("Account")).Count() != 0;
+    }
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       var doc = OnPingDocument();
       var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
 
-      if(accountObj.ProvideAccount != AccountRequired)
+      if (accountObj != null && (accountObj.ProvideAccount != AccountRequired || (accountObj.ProvideAccount && !HasAccountAdded())))
       {
         AccountRequired = accountObj.ProvideAccount;
-        OnAddAccount(null, null);
+        if ((AccountRequired && !HasAccountAdded()) || (!AccountRequired && HasAccountAdded()))
+        {
+          OnPingDocument().ScheduleSolution(5, d =>
+          {
+            AddAccount();
+          });
+        }
+
+        return;
       }
 
       if (AccountRequired)
