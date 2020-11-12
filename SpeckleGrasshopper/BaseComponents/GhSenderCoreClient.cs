@@ -549,6 +549,7 @@ namespace SpeckleGrasshopper
     }
 
 
+
     private void AddAccount()
     {
       var paramsMatch = Params.Input.Where(x => x.Name.Equals("Account"));
@@ -1037,7 +1038,7 @@ namespace SpeckleGrasshopper
       baseProps["angleTolerance"] = Rhino.RhinoDoc.ActiveDoc.ModelAngleToleranceRadians;
       updateStream.BaseProperties = baseProps;
 
-      Client.StreamUpdateAsync(Client.StreamId, updateStream)
+      var myTask = Client.StreamUpdateAsync(Client.StreamId, updateStream)
         .ContinueWith(x =>
         {
           var response = x.Result;
@@ -1084,6 +1085,9 @@ namespace SpeckleGrasshopper
            });
           }
         });
+
+      if (AccountRequired)
+        myTask.Wait();
 
       Client.BroadcastMessage("stream", Client.StreamId, new { eventType = "update-global" });
 

@@ -127,5 +127,11 @@ namespace SpeckleGrasshopper.ExtendedComponents
       return obj as GlobalRhinoComputeComponent;
     }
 
+    public static bool RhinoComputeOn(GH_Document document)
+    {
+      var obj = GetFromDocument(document);
+      return obj != null && obj.ProvideAccount;
+    }
+
   }
 }
