@@ -25,6 +25,7 @@ using SpecklePopup;
 
 namespace SpeckleGrasshopper
 {
+
   public class GhSenderClient : GH_Component, IGH_VariableParameterComponent
   {
     Account account;
@@ -40,7 +41,7 @@ namespace SpeckleGrasshopper
     public SpeckleApiClient Client;
 
     public GH_Document Document;
-    private System.Timers.Timer MetadataSender, DataSender;
+    private TimerPlus MetadataSender, DataSender;
 
     private string BucketName;
     private List<Layer> BucketLayers = new List<Layer>();
@@ -205,10 +206,10 @@ namespace SpeckleGrasshopper
         param.ObjectChanged += (sender, e) => UpdateMetadata();
       }
 
-      MetadataSender = new System.Timers.Timer(1000) { AutoReset = false, Enabled = false };
+      MetadataSender = new TimerPlus(1000) { AutoReset = false, Enabled = false };
       MetadataSender.Elapsed += MetadataSender_Elapsed;
 
-      DataSender = new System.Timers.Timer(2000) { AutoReset = false, Enabled = false };
+      DataSender = new TimerPlus(2000) { AutoReset = false, Enabled = false };
       DataSender.Elapsed += DataSender_Elapsed;
 
       ObjectCache = new Dictionary<string, SpeckleObject>();
@@ -608,6 +609,12 @@ namespace SpeckleGrasshopper
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Time Remaining: {DataSender.TimeLeft}");
+      if (DataSender.TimeLeft <= 0)
+      {
+        DataSender.Start();
+      }
+
       var doc = OnPingDocument();
       var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
 
@@ -624,7 +631,7 @@ namespace SpeckleGrasshopper
 
         return;
       }
-
+      
       project = null;
       projectId = "";
       var p = Params.Input[0].VolatileData.AllData(false).FirstOrDefault();
@@ -904,11 +911,11 @@ namespace SpeckleGrasshopper
       Client.Stream.Children.Add(cloneResult.Clone.StreamId);
 
 
-      Message = String.Format("Converting {0} \n objects", BucketObjects.Count);
+      Message = string.Format("Converting {0} \n objects", BucketObjects.Count);
 
       var convertedObjects = Converter.Serialise(BucketObjects).ToList();
 
-      Message = String.Format("Creating payloads");
+      Message = string.Format("Creating payloads");
 
       LocalContext.PruneExistingObjects(convertedObjects, Client.BaseUrl);
 
