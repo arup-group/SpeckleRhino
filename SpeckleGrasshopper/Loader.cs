@@ -69,7 +69,7 @@ namespace SpeckleGrasshopper
         Process.Start(@"https://discourse.speckle.works");
       });
 
-      speckleMenu.DropDown.Items.Add("Rhino.Compute toggle", null, (s, a) =>
+      speckleMenu.DropDown.Items.Add("Toggle Rhino.Compute mode", null, (s, a) =>
       {
         Debug.WriteLine("Rhino.Compute mode");
 

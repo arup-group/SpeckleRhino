@@ -17,7 +17,7 @@ namespace SpeckleGrasshopper.ExtendedComponents
     /// Initializes a new instance of the GlobalRhinoComputeComponent class.
     /// </summary>
     public GlobalRhinoComputeComponent()
-      : base("Global Rhino.Compute", "G R.C",
+      : base("Rhino.Compute mode", "R.C M",
           "Toggle Rhino.Compute mode for Speckle",
           "Speckle", "Advanced")
     {
@@ -53,7 +53,7 @@ namespace SpeckleGrasshopper.ExtendedComponents
     {
       base.AppendAdditionalMenuItems(menu);
       Menu_AppendSeparator(menu);
-      Menu_AppendItem(menu, "Make Global", OnAccountGlobal, true, ProvideAccount);
+      Menu_AppendItem(menu, "Toggle Rhino.Compute mode", OnAccountGlobal, true, ProvideAccount);
     }
 
     private void OnAccountGlobal(object sender, EventArgs e)
@@ -72,13 +72,13 @@ namespace SpeckleGrasshopper.ExtendedComponents
 
     private void DisplayStatus()
     {
-      var name = $"Global: {ProvideAccount}";
+      var name = $"Rhino.Compute Mode: {ProvideAccount}";
       base.NickName = name;
     }
 
     public override bool Write(GH_IWriter writer)
     {
-      writer.SetBoolean("IsGlobal", ProvideAccount);
+      writer.SetBoolean("RhinoComputeMode", ProvideAccount);
       return base.Write(writer);
     }
 
@@ -94,7 +94,7 @@ namespace SpeckleGrasshopper.ExtendedComponents
 
     public override bool Read(GH_IReader reader)
     {
-      ProvideAccount = reader.GetBoolean("IsGlobal");
+      ProvideAccount = reader.GetBoolean("RhinoComputeMode");
 
       return base.Read(reader);
     }
