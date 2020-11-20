@@ -209,7 +209,10 @@ namespace SpeckleGrasshopper
       GH_DocumentObject.Menu_AppendItem(menu, "Force refresh.", (sender, e) =>
      {
        if (StreamId != null)
+       {
          UpdateGlobal();
+         ExpireSolution(true);
+       }
      });
 
       GH_DocumentObject.Menu_AppendSeparator(menu);
@@ -392,7 +395,7 @@ namespace SpeckleGrasshopper
         }
 
         // add objects to cache async
-        Task.Run(() =>
+        var myTask1 = Task.Run(() =>
        {
          foreach (var obj in newObjects)
          {
@@ -407,14 +410,23 @@ namespace SpeckleGrasshopper
 
         SpeckleObjects.Clear();
 
-        Task.Run(() =>
+        var myTask2 = Task.Run(() =>
         {
           ConvertedObjects = SpeckleCore.Converter.Deserialise(Client.Stream.Objects);
           IsUpdating = false;
-          Rhino.RhinoApp.InvokeOnUiThread(expireComponentAction);
+          
+          if(!AccountRequired)
+            Rhino.RhinoApp.InvokeOnUiThread(expireComponentAction);
 
           this.Message = "Got data\n@" + DateTime.Now.ToString("hh:mm:ss");
         });
+
+        if(AccountRequired)
+        {
+          myTask1.Wait();
+          myTask2.Wait();
+        }
+
 
       }
       catch (Exception e)
@@ -478,6 +490,8 @@ namespace SpeckleGrasshopper
       return Params.Input.Where(x => x.Name.Equals("Account")).Count() != 0;
     }
 
+    //private bool StartForceUpdate = false;
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       var doc = OnPingDocument();
@@ -510,19 +524,11 @@ namespace SpeckleGrasshopper
           AuthToken = account.Token;
           UpdateClient(RestApi, AuthToken);
         }
-      }
 
-      //if (accountObj.GlobalOn)
-      //{
-      //  AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Using Global account");
-      //  if (account != accountObj.GlobalOn)
-      //  {
-      //    account = accountObj.GlobalOn;
-      //    RestApi = account.RestApi;
-      //    AuthToken = account.Token;
-      //    UpdateClient(RestApi, AuthToken);
-      //  }
-      //}
+        if (!IsUpdating)
+          Expired = true;
+
+      }
 
       if (account == null)
       {
@@ -570,7 +576,17 @@ namespace SpeckleGrasshopper
         return;
       }
 
-      if (Expired) { Expired = false; UpdateGlobal(); return; }
+      if (Expired) 
+      { 
+        Expired = false;
+        UpdateGlobal();
+        if(AccountRequired)
+        {
+          CalculateBoundingBox();
+          SetObjects(DA);
+        }
+        return; 
+      }
 
       CalculateBoundingBox();
       ExpirePreview(true);
