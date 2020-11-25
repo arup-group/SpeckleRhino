@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="BaseComponents\GhReceiverCoreClient.cs" />
     <Compile Include="Attributes\GhSenderClientAttributes.cs" />
+    <Compile Include="BaseComponents\GhReceiverSync.cs" />
     <Compile Include="BaseComponents\GhSenderCoreClient.cs" />
     <Compile Include="BaseComponents\TimerPlus.cs">
       <SubType>Component</SubType>

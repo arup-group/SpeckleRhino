@@ -145,7 +145,6 @@ namespace SpeckleGrasshopper
       StreamIdChanger.Elapsed += ChangeStreamId;
     }
 
-
     private void ChangeStreamId(object sender, System.Timers.ElapsedEventArgs e)
     {
       Debug.WriteLine("Changing streams to {0}.", StreamId);
@@ -262,11 +261,6 @@ namespace SpeckleGrasshopper
       }
     }
 
-    //private void OnAddAccount(object sender, EventArgs e)
-    //{
-    //  AddAccount();
-    //}
-
     private void AddAccount()
     {
       //AccountRequired = !AccountRequired;
@@ -305,23 +299,30 @@ namespace SpeckleGrasshopper
         return;
       }
       if (e.EventObject != null)
-        switch ((string)e.EventObject.args.eventType)
+        try
         {
-          case "update-global":
-            UpdateGlobal();
-            break;
-          case "update-meta":
-            UpdateMeta();
-            break;
-          case "update-name":
-            UpdateMeta();
-            break;
-          case "update-children":
-            UpdateChildren();
-            break;
-          default:
-            CustomMessageHandler((string)e.EventObject.args.eventType, e);
-            break;
+          switch ((string)e.EventObject.args.eventType)
+          {
+            case "update-global":
+              UpdateGlobal();
+              break;
+            case "update-meta":
+              UpdateMeta();
+              break;
+            case "update-name":
+              UpdateMeta();
+              break;
+            case "update-children":
+              UpdateChildren();
+              break;
+            default:
+              CustomMessageHandler((string)e.EventObject.args.eventType, e);
+              break;
+          }
+        }
+        catch (Exception ex)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToString());
         }
     }
 
@@ -355,7 +356,7 @@ namespace SpeckleGrasshopper
         this.Message = "Getting objects!";
 
         // pass the object list through a cache check 
-        //LocalContext.GetCachedObjects( Client.Stream.Objects, Client.BaseUrl );
+        LocalContext.GetCachedObjects( Client.Stream.Objects, Client.BaseUrl );
 
         // filter out the objects that were not in the cache and still need to be retrieved
         var payload = Client.Stream.Objects.Where(o => o.Type == "Placeholder").Select(obj => obj._id).ToArray();
@@ -479,6 +480,7 @@ namespace SpeckleGrasshopper
     protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("ID", "ID", "The stream's short id.", GH_ParamAccess.item);
+      pManager[0].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -489,8 +491,6 @@ namespace SpeckleGrasshopper
     {
       return Params.Input.Where(x => x.Name.Equals("Account")).Count() != 0;
     }
-
-    //private bool StartForceUpdate = false;
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {

@@ -235,20 +235,20 @@ namespace SpeckleGrasshopper
       }
     }
 
-    private void InitializeClient(Account account, string streamid = null)
+    private async void InitializeClient(Account account, string streamid = null)
     {
       RestApi = account.RestApi;
       Token = account.Token;
-      StreamId = streamid;
+      //StreamId = streamid;
       InitializeClient(RestApi, Token, streamid);
     }
 
-    private void InitializeClient(string RestApi, string Token, string streamid = null)
+    private async void InitializeClient(string RestApi, string Token, string streamid = null)
     {
       Client = new SpeckleApiClient(RestApi);
       if (streamid == null)
       {
-        Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
+        await Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
         {
           Rhino.RhinoApp.InvokeOnUiThread(ExpireComponentAction);
           if (Client.Stream == null)
@@ -257,14 +257,11 @@ namespace SpeckleGrasshopper
       }
       else
       {
-        Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).ContinueWith(task =>
-        {
-          var stream = Client.StreamGetAsync(streamid, null).Result;
-          Client.Stream = stream.Resource;
-          Client.StreamId = streamid;
-          StreamId = streamid;
-        }
-        );
+        await Client.IntializeSender(Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString());
+        var stream = Client.StreamGetAsync(streamid, null).Result;
+        Client.Stream = stream.Resource;
+        Client.StreamId = streamid;
+        StreamId = streamid;
       }
     }
 
@@ -533,7 +530,10 @@ namespace SpeckleGrasshopper
       GH_DocumentObject.Menu_AppendItem(menu, "Children:");
       GH_DocumentObject.Menu_AppendSeparator(menu);
 
-      foreach (string childId in Client.Stream.Children)
+      var maxChildren = Client.Stream.Children;
+      if (maxChildren.Count > 10)
+        maxChildren = maxChildren.Take(10).ToList();
+      foreach (string childId in maxChildren)
       {
         GH_DocumentObject.Menu_AppendItem(menu, "Child " + childId, (sender, e) =>
         {
@@ -608,7 +608,7 @@ namespace SpeckleGrasshopper
       pManager.AddTextParameter("stream id", "ID", "The stream's id.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected override async void SolveInstance(IGH_DataAccess DA)
     {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Time Remaining: {DataSender.TimeLeft}");
       if (DataSender.TimeLeft <= 0)
@@ -632,7 +632,7 @@ namespace SpeckleGrasshopper
 
         return;
       }
-      
+
       project = null;
       projectId = "";
       var p = Params.Input[0].VolatileData.AllData(false).FirstOrDefault();
@@ -648,7 +648,7 @@ namespace SpeckleGrasshopper
       {
         if (DA.GetData(1, ref _account) && DA.GetData(2, ref streamId))
         {
-          if (account != _account)
+          if (account != _account || StreamId != streamId)
           {
             account = _account;
             StreamId = streamId;
@@ -908,8 +908,11 @@ namespace SpeckleGrasshopper
       IsSendingUpdate = true;
 
       // Hack for thesis: always create history
-      var cloneResult = Client.StreamCloneAsync(StreamId).Result;
-      Client.Stream.Children.Add(cloneResult.Clone.StreamId);
+      if (StreamId != null)
+      {
+        var cloneResult = Client.StreamCloneAsync(StreamId).Result;
+        Client.Stream.Children?.Add(cloneResult.Clone.StreamId);
+      }
 
 
       Message = string.Format("Converting {0} \n objects", BucketObjects.Count);
@@ -1038,11 +1041,15 @@ namespace SpeckleGrasshopper
       baseProps["angleTolerance"] = Rhino.RhinoDoc.ActiveDoc.ModelAngleToleranceRadians;
       updateStream.BaseProperties = baseProps;
 
+
       var myTask = Client.StreamUpdateAsync(Client.StreamId, updateStream)
         .ContinueWith(x =>
         {
-          var response = x.Result;
-          Log += response.Message;
+          if (x.Status == TaskStatus.RanToCompletion)
+          {
+            var response = x.Result;
+            Log += response.Message;
+          }
         })
         .ContinueWith(y =>
         {
