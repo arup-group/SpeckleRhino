@@ -670,10 +670,10 @@ namespace SpeckleGrasshopper
         Message = "JobQueue: " + JobQueue.Count;
       }
 
-      StreamId = Client.StreamId;
+      //StreamId = Client.StreamId;
 
       DA.SetData(0, Log);
-      DA.SetData(1, Client.StreamId);
+      DA.SetData(1, StreamId);
 
       //if (!Client.IsConnected)
       //{
@@ -911,7 +911,7 @@ namespace SpeckleGrasshopper
       if (StreamId != null)
       {
         var cloneResult = Client.StreamCloneAsync(StreamId).Result;
-        Client.Stream.Children?.Add(cloneResult.Clone.StreamId);
+        Client.Stream?.Children?.Add(cloneResult.Clone.StreamId);
       }
 
 

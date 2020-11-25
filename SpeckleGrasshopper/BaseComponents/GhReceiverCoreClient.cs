@@ -79,8 +79,14 @@ namespace SpeckleGrasshopper
           }
         writer.SetBoolean("deserialize", this.Deserialize);
         writer.SetBoolean("AccountRequired", AccountRequired);
+
+        if (account != null)
+        {
+          writer.SetString("AccountToken", account.Token);
+          writer.SetString("AccountApi", account.RestApi);
+        }
       }
-      catch { }
+      catch (Exception e) { }
       return base.Write(writer);
     }
 
@@ -101,6 +107,13 @@ namespace SpeckleGrasshopper
           RestApi = Client.BaseUrl;
 
           InitReceiverEventsAndGlobals();
+        }
+
+        string accountToken = "";
+        string accountApi = "";
+        if (reader.TryGetString("AccountToken", ref accountToken) && reader.TryGetString("AccountApi", ref accountApi))
+        {
+          account = new Account() { RestApi = accountApi, Token = accountToken };
         }
         reader.TryGetBoolean("AccountRequired", ref AccountRequired);
         this.Deserialize = reader.GetBoolean("deserialize");
@@ -145,17 +158,28 @@ namespace SpeckleGrasshopper
       StreamIdChanger.Elapsed += ChangeStreamId;
     }
 
-    private void ChangeStreamId(object sender, System.Timers.ElapsedEventArgs e)
+    private async void ChangeStreamId(object sender, System.Timers.ElapsedEventArgs e)
     {
       Debug.WriteLine("Changing streams to {0}.", StreamId);
-      UpdateClient(RestApi, AuthToken);
+      UpdateClient(RestApi, AuthToken, null);
     }
 
-    private void UpdateClient(string RestApi, string AuthToken)
+    private async void UpdateClientWrap(string RestApi, string AuthToken, IGH_DataAccess DA)
+    {
+      UpdateClient(RestApi, AuthToken, DA);
+    }
+
+    private async void UpdateClient(string RestApi, string AuthToken, IGH_DataAccess DA)
     {
       Client = new SpeckleApiClient(RestApi, true);
       InitReceiverEventsAndGlobals();
-      Client.IntializeReceiver(StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
+      await Client.IntializeReceiver(StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
+      //if (DA != null)
+      //{
+      //  UpdateGlobal();
+      //  SetObjects(DA);
+      //  ExpirePreview(true);
+      //}
     }
 
     public void InitReceiverEventsAndGlobals()
@@ -251,7 +275,10 @@ namespace SpeckleGrasshopper
       GH_DocumentObject.Menu_AppendItem(menu, "Children:");
       GH_DocumentObject.Menu_AppendSeparator(menu);
 
-      foreach (string childId in Client.Stream.Children)
+      var maxChildren = Client.Stream.Children;
+      if (maxChildren.Count > 10)
+        maxChildren = maxChildren.Take(10).ToList();
+      foreach (string childId in maxChildren)
       {
         GH_DocumentObject.Menu_AppendItem(menu, "Child " + childId, (sender, e) =>
         {
@@ -356,7 +383,7 @@ namespace SpeckleGrasshopper
         this.Message = "Getting objects!";
 
         // pass the object list through a cache check 
-        LocalContext.GetCachedObjects( Client.Stream.Objects, Client.BaseUrl );
+        LocalContext.GetCachedObjects(Client.Stream.Objects, Client.BaseUrl);
 
         // filter out the objects that were not in the cache and still need to be retrieved
         var payload = Client.Stream.Objects.Where(o => o.Type == "Placeholder").Select(obj => obj._id).ToArray();
@@ -415,14 +442,14 @@ namespace SpeckleGrasshopper
         {
           ConvertedObjects = SpeckleCore.Converter.Deserialise(Client.Stream.Objects);
           IsUpdating = false;
-          
-          if(!AccountRequired)
+
+          if (!AccountRequired)
             Rhino.RhinoApp.InvokeOnUiThread(expireComponentAction);
 
           this.Message = "Got data\n@" + DateTime.Now.ToString("hh:mm:ss");
         });
 
-        if(AccountRequired)
+        if (AccountRequired)
         {
           myTask1.Wait();
           myTask2.Wait();
@@ -492,7 +519,7 @@ namespace SpeckleGrasshopper
       return Params.Input.Where(x => x.Name.Equals("Account")).Count() != 0;
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected override async void SolveInstance(IGH_DataAccess DA)
     {
       var doc = OnPingDocument();
       var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
@@ -522,7 +549,7 @@ namespace SpeckleGrasshopper
           account = acc;
           RestApi = account.RestApi;
           AuthToken = account.Token;
-          UpdateClient(RestApi, AuthToken);
+          UpdateClientWrap(RestApi, AuthToken, DA);
         }
 
         if (!IsUpdating)
@@ -535,7 +562,7 @@ namespace SpeckleGrasshopper
         account = GhSenderClient.SignInWindow();
         RestApi = account.RestApi;
         AuthToken = account.Token;
-        UpdateClient(RestApi, AuthToken);
+        UpdateClientWrap(RestApi, AuthToken, DA);
       }
 
       if (Paused)
@@ -572,20 +599,20 @@ namespace SpeckleGrasshopper
 
       if (!Client.IsConnected)
       {
-        this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Client hasn't connected");
-        return;
+        //this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Client hasn't connected");
+        //return;
       }
 
-      if (Expired) 
-      { 
+      if (Expired)
+      {
         Expired = false;
         UpdateGlobal();
-        if(AccountRequired)
+        if (AccountRequired)
         {
           CalculateBoundingBox();
           SetObjects(DA);
         }
-        return; 
+        return;
       }
 
       CalculateBoundingBox();
