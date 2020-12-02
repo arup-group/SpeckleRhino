@@ -1137,6 +1137,7 @@ namespace SpeckleGrasshopper
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid client, check account credentials");
         return;
       }
+      
       var updateResult = Client.StreamUpdateAsync(Client.StreamId, updateStream).Result;
 
       Log += updateResult.Message;

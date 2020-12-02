@@ -173,13 +173,8 @@ namespace SpeckleGrasshopper
     {
       Client = new SpeckleApiClient(RestApi, true);
       InitReceiverEventsAndGlobals();
-      await Client.IntializeReceiver(StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
-      //if (DA != null)
-      //{
-      //  UpdateGlobal();
-      //  SetObjects(DA);
-      //  ExpirePreview(true);
-      //}
+      if (StreamId != null)
+        await Client.IntializeReceiver(StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
     }
 
     public void InitReceiverEventsAndGlobals()
