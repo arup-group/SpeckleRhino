@@ -506,7 +506,7 @@ namespace SpeckleGrasshopper
 
     protected override void RegisterInputParams( GH_Component.GH_InputParamManager pManager )
     {
-      pManager.AddGenericParameter( "Project", "P", "Optional input for either a Project type (get it from ListMyProject component) or a string for the ProjectId", GH_ParamAccess.tree );
+      pManager.AddGenericParameter( "Project", "Pr", "Optional input for either a Project type (get it from ListMyProject component) or a string for the ProjectId", GH_ParamAccess.tree );
       pManager[0].Optional = true;
       pManager.AddGenericParameter("A", "A", "A is for Apple", GH_ParamAccess.tree);
       pManager[1].Optional = true;
@@ -529,10 +529,17 @@ namespace SpeckleGrasshopper
       var p = Params.Input[0].VolatileData.AllData(false).FirstOrDefault();
       var v = p?.GetType().GetProperty("Value").GetValue(p);
       project = v as Project;
-      if (project == null && v is string vs)
-        projectId = vs;
-      if(project == null && projectId == "")
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
+      if (p != null)
+      {
+
+        if (project == null)
+          if (v is string vs)
+            projectId = vs;
+          else
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This is not a valid Project type or Project Id");
+        if (project == null && projectId == "")
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
+      }
 
       if ( Client == null )
       {
