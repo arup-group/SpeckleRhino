@@ -536,7 +536,7 @@ namespace SpeckleGrasshopper
           if (v is string vs)
             projectId = vs;
           else
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This is not a valid Project type or Project Id");
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "This is not a valid Project type or Project Id. Data to send should be connected to the other parameters.");
         if (project == null && projectId == "")
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
       }
