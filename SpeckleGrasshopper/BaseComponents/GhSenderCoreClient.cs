@@ -1171,6 +1171,7 @@ namespace SpeckleGrasshopper
     private Rectangle BaseRectangle;
     private Rectangle StreamIdBounds;
     private Rectangle StreamNameBounds;
+    private Rectangle ClientNameBounds;
     private Rectangle PushStreamButtonRectangle;
 
     public GhSenderClientAttributes( GhSenderClient component ) : base( component )
@@ -1184,7 +1185,7 @@ namespace SpeckleGrasshopper
       BaseRectangle = GH_Convert.ToRectangle( Bounds );
       StreamIdBounds = new Rectangle( ( int ) ( BaseRectangle.X + ( BaseRectangle.Width - 120 ) * 0.5 ), BaseRectangle.Y - 25, 120, 20 );
       StreamNameBounds = new Rectangle( StreamIdBounds.X, BaseRectangle.Y - 50, 120, 20 );
-
+      ClientNameBounds = new Rectangle(StreamIdBounds.X, BaseRectangle.Y - 75, 120, 20);
       PushStreamButtonRectangle = new Rectangle( ( int ) ( BaseRectangle.X + ( BaseRectangle.Width - 30 ) * 0.5 ), BaseRectangle.Y + BaseRectangle.Height, 30, 30 );
 
       if ( Base.ManualMode )
@@ -1211,6 +1212,12 @@ namespace SpeckleGrasshopper
         var streamNameCapsule = GH_Capsule.CreateTextCapsule( box: StreamNameBounds, textbox: StreamNameBounds, palette: GH_Palette.Black, text: "(S) " + Base.NickName, highlight: 0, radius: 5 );
         streamNameCapsule.Render( graphics, myStyle );
         streamNameCapsule.Dispose();
+
+        var dotCom = Base.Client.BaseUrl.Split('.').Last();
+        var clintNickname = Base.Client.BaseUrl.Replace("https://", "").Replace("." + dotCom, "");
+        var clientNameCapsule = GH_Capsule.CreateTextCapsule(box: ClientNameBounds, textbox: ClientNameBounds, palette: GH_Palette.Black, text: clintNickname, highlight: 0, radius: 5);
+        clientNameCapsule.Render(graphics, myStyle);
+        clientNameCapsule.Dispose();
 
         if ( Base.ManualMode )
         {
