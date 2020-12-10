@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Rhino.PlugIns;
+using Grasshopper.Kernel;
 
 
 [assembly: PlugInDescription( DescriptionType.Email, "hello@speckle.works" )]
@@ -19,6 +20,9 @@ using Rhino.PlugIns;
 [assembly: AssemblyCopyright("Copyright Speckle.Works & Community Contributors © 2016-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+
+// Force directly loading because some SpeckleKit elements do not appear if we load via COFF byte arrays
+[assembly: GH_Loading(GH_LoadingDemand.ForceDirect)]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

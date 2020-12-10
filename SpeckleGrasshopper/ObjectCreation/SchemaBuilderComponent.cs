@@ -325,6 +325,16 @@ namespace SpeckleGrasshopper.UserDataUtils
               innerVal = item;
             }
 
+            if (Params.Input[i].Name.EndsWith("Refs") )
+            {
+              if (innerVal is SpeckleCore.SpeckleObject speckleObject)
+              {
+                string key = "ApplicationId";
+
+                innerVal = speckleObject.GetType().GetProperty(key).GetValue(speckleObject, null);
+              }
+            }
+
             listForSetting.Add(innerVal);
           }
 
