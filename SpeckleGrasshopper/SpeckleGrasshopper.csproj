@@ -148,6 +148,15 @@
     <PackageReference Include="RhinoCommon" IncludeAssets="compile; build">
       <Version>6.1.18037.13441</Version>
     </PackageReference>
+    <PackageReference Include="Sentry">
+      <Version>2.1.8</Version>
+    </PackageReference>
+    <PackageReference Include="Sentry.Protocol">
+      <Version>2.1.8</Version>
+    </PackageReference>
+    <PackageReference Include="Sentry.Serilog">
+      <Version>2.1.8</Version>
+    </PackageReference>
     <PackageReference Include="SpeckleCore">
       <Version>1.8.3.463</Version>
     </PackageReference>

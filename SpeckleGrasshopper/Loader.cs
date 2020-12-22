@@ -8,6 +8,8 @@ using System.Timers;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using Grasshopper.Kernel;
+using Sentry;
+using Serilog;
 
 namespace SpeckleGrasshopper
 {
@@ -20,7 +22,18 @@ namespace SpeckleGrasshopper
 
     public override GH_LoadingInstruction PriorityLoad( )
     {
-      loadTimer = new System.Timers.Timer( 500 );
+      Log.Logger = new LoggerConfiguration()
+        .WriteTo.Sentry(o => o.Dsn = new Dsn("https://ebc74212094647f08c7661fa38c65839@o141124.ingest.sentry.io/5567181"))
+        .CreateLogger();
+      Log.Error("Test through Sentry-Serilog!");
+      Log.Verbose("Hello");
+
+      var user = SentrySdk.Init("https://ebc74212094647f08c7661fa38c65839@o141124.ingest.sentry.io/5567181");
+      
+      //throw null;
+      
+
+      loadTimer = new System.Timers.Timer(500);
       loadTimer.Start();
       loadTimer.Elapsed += AddSpeckleMenu;
       return GH_LoadingInstruction.Proceed;
