@@ -8,6 +8,7 @@ using System.Timers;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using Grasshopper.Kernel;
+using SpecklePopup;
 
 namespace SpeckleGrasshopper
 {
@@ -15,6 +16,7 @@ namespace SpeckleGrasshopper
   {
     System.Timers.Timer loadTimer;
     static bool MenuHasBeenAdded = false;
+    SignInWindow signInWindow;
 
     public Loader( ) { }
 
@@ -39,7 +41,11 @@ namespace SpeckleGrasshopper
       var speckleMenu = new ToolStripMenuItem( "Speckle" );
       speckleMenu.DropDown.Items.Add( "Speckle Account Manager", null, ( s, a ) =>
       {
-        var signInWindow = new SpecklePopup.SignInWindow( false );
+        if (signInWindow != null)
+        {
+          signInWindow.Close();
+        }
+        signInWindow = new SpecklePopup.SignInWindow( false );
         var helper = new System.Windows.Interop.WindowInteropHelper( signInWindow );
         helper.Owner = Rhino.RhinoApp.MainWindowHandle();
         signInWindow.Show();
