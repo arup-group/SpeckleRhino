@@ -718,8 +718,8 @@ namespace SpeckleGrasshopper
     Rectangle BaseRectangle;
     Rectangle StreamIdBounds;
     Rectangle StreamNameBounds;
+    private Rectangle ClientNameBounds;
     Rectangle PauseButtonBounds;
-
     public GhReceiverClientAttributes( GhReceiverClient component ) : base( component )
     {
       Base = component;
@@ -731,7 +731,7 @@ namespace SpeckleGrasshopper
       BaseRectangle = GH_Convert.ToRectangle( Bounds );
       StreamIdBounds = new Rectangle( ( int ) ( BaseRectangle.X + ( BaseRectangle.Width - 120 ) * 0.5 ), BaseRectangle.Y - 25, 120, 20 );
       StreamNameBounds = new Rectangle( StreamIdBounds.X, BaseRectangle.Y - 50, 120, 20 );
-
+      ClientNameBounds = new Rectangle(StreamIdBounds.X, BaseRectangle.Y - 75, 120, 20);
       PauseButtonBounds = new Rectangle( ( int ) ( BaseRectangle.X + ( BaseRectangle.Width - 30 ) * 0.5 ), BaseRectangle.Y + BaseRectangle.Height, 30, 30 );
 
       Rectangle newBaseRectangle = new Rectangle( BaseRectangle.X, BaseRectangle.Y, BaseRectangle.Width, BaseRectangle.Height + 33 );
@@ -754,6 +754,15 @@ namespace SpeckleGrasshopper
         var streamNameCapsule = GH_Capsule.CreateTextCapsule( box: StreamNameBounds, textbox: StreamNameBounds, palette: GH_Palette.Black, text: "(R) " + Base.NickName + ( Base.Paused ? " (Paused)" : "" ), highlight: 0, radius: 5 );
         streamNameCapsule.Render( graphics, myStyle );
         streamNameCapsule.Dispose();
+
+        if(Base.Client != null && Base.Client.BaseUrl != null)
+        {
+          var dotCom = Base.Client.BaseUrl.Split('.').Last();
+          var clintNickname = Base.Client.BaseUrl.Replace("https://", "").Replace("." + dotCom, "");
+          var clientNameCapsule = GH_Capsule.CreateTextCapsule(box: ClientNameBounds, textbox: ClientNameBounds, palette: GH_Palette.Black, text: clintNickname, highlight: 0, radius: 5);
+          clientNameCapsule.Render(graphics, myStyle);
+          clientNameCapsule.Dispose();
+        }
 
         //var pauseStreamingButton = GH_Capsule.CreateTextCapsule(PauseButtonBounds, PauseButtonBounds, GH_Palette.Black, "");
         //pauseStreamingButton.Text = Base.Paused ? "Paused" : "Streaming";
