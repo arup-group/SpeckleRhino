@@ -15,11 +15,15 @@ using Grasshopper.Kernel;
 using SpeckleGrasshopper.ExtendedComponents;
 using SpeckleGrasshopper.Management;
 using SpeckleGrasshopper.Properties;
+using SpecklePopup;
 
 namespace SpeckleGrasshopper
 {
   public class Loader : GH_AssemblyPriority
   {
+    System.Timers.Timer loadTimer;
+    static bool MenuHasBeenAdded = false;
+    SignInWindow signInWindow;
     private bool isGlobalOn;
     ToolStripMenuItem toolStripItem;
     public Loader() { }
@@ -49,8 +53,12 @@ namespace SpeckleGrasshopper
       /////////////////////////////////////////////////////
       speckleMenu.DropDown.Items.Add("Speckle Account Manager", null, (s, a) =>
       {
-        var signInWindow = new SpecklePopup.SignInWindow(false);
-        var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
+        if (signInWindow != null)
+        {
+          signInWindow.Close();
+        }
+        signInWindow = new SpecklePopup.SignInWindow( false );
+        var helper = new System.Windows.Interop.WindowInteropHelper( signInWindow );
         helper.Owner = Rhino.RhinoApp.MainWindowHandle();
         signInWindow.Show();
       });
