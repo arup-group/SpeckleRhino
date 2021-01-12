@@ -62,7 +62,7 @@ namespace SpeckleGrasshopper.Management
 
     protected override void RegisterOutputParams( GH_OutputParamManager pManager )
     {
-      pManager.Register_GenericParam( "account", "A", "Selected account." );
+      pManager.Register_GenericParam( "Account", "A", "Selected account." );
     }
 
     public override void AddedToDocument( GH_Document document )

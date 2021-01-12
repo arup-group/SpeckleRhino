@@ -7,7 +7,14 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using System.Windows.Media.Effects;
+using GH_IO.Serialization;
+using Grasshopper.GUI;
+using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
+using SpeckleGrasshopper.ExtendedComponents;
+using SpeckleGrasshopper.Management;
+using SpeckleGrasshopper.Properties;
 using SpecklePopup;
 
 namespace SpeckleGrasshopper
@@ -17,29 +24,34 @@ namespace SpeckleGrasshopper
     System.Timers.Timer loadTimer;
     static bool MenuHasBeenAdded = false;
     SignInWindow signInWindow;
+    private bool isGlobalOn;
+    ToolStripMenuItem toolStripItem;
+    public Loader() { }
 
-    public Loader( ) { }
-
-    public override GH_LoadingInstruction PriorityLoad( )
+    public override GH_LoadingInstruction PriorityLoad()
     {
-      loadTimer = new System.Timers.Timer( 500 );
-      loadTimer.Start();
-      loadTimer.Elapsed += AddSpeckleMenu;
+      Grasshopper.Instances.CanvasCreated += AddSpeckleMenu;
       return GH_LoadingInstruction.Proceed;
     }
 
-    private void AddSpeckleMenu( object sender, ElapsedEventArgs e )
+
+    private void AddSpeckleMenu(GH_Canvas canvas)
     {
-      if ( Grasshopper.Instances.DocumentEditor == null ) return;
+      Grasshopper.Instances.CanvasCreated -= AddSpeckleMenu;
 
-      if ( MenuHasBeenAdded )
-      {
-        loadTimer.Stop();
+      var docEditor = Grasshopper.Instances.DocumentEditor;
+      if (docEditor == null)
         return;
-      }
+      var mainMenu = docEditor.MainMenuStrip;
 
-      var speckleMenu = new ToolStripMenuItem( "Speckle" );
-      speckleMenu.DropDown.Items.Add( "Speckle Account Manager", null, ( s, a ) =>
+
+      var speckleMenu = new ToolStripMenuItem("Speckle");
+      docEditor.MainMenuStrip.SuspendLayout();
+      docEditor.MainMenuStrip.Items.AddRange(new ToolStripItem[] { speckleMenu });
+
+      // Create dropdown items
+      /////////////////////////////////////////////////////
+      speckleMenu.DropDown.Items.Add("Speckle Account Manager", null, (s, a) =>
       {
         if (signInWindow != null)
         {
@@ -49,39 +61,72 @@ namespace SpeckleGrasshopper
         var helper = new System.Windows.Interop.WindowInteropHelper( signInWindow );
         helper.Owner = Rhino.RhinoApp.MainWindowHandle();
         signInWindow.Show();
-      } );
+      });
 
-      speckleMenu.DropDown.Items.Add( new ToolStripSeparator() );
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
-      speckleMenu.DropDown.Items.Add( "Speckle Home", null, ( s, a ) =>
+      speckleMenu.DropDown.Items.Add("Speckle Home", null, (s, a) =>
       {
-        Process.Start( @"https://speckle.works" );
-      } );
+        Process.Start(@"https://speckle.works");
+      });
 
-      speckleMenu.DropDown.Items.Add( "Speckle Documentation", null, ( s, a ) =>
+      speckleMenu.DropDown.Items.Add("Speckle Documentation", null, (s, a) =>
       {
-        Process.Start( @"https://speckle.works/docs/essentials/start" );
-      } );
+        Process.Start(@"https://speckle.works/docs/essentials/start");
+      });
 
-      speckleMenu.DropDown.Items.Add( "Speckle Forum", null, ( s, a ) =>
+      speckleMenu.DropDown.Items.Add("Speckle Forum", null, (s, a) =>
       {
-        Process.Start( @"https://discourse.speckle.works" );
-      } );
+        Process.Start(@"https://discourse.speckle.works");
+      });
 
-      try
+      toolStripItem = GH_DocumentObject.Menu_AppendItem(mainMenu, "Toggle Rhino.Compute mode", (s, a) =>
       {
-        var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
-        Grasshopper.Instances.DocumentEditor.Invoke( new Action( ( ) =>
+        Debug.WriteLine("Rhino.Compute mode");
+
+        var doc = Grasshopper.Instances.ActiveCanvas.Document;
+        if (doc == null)
+          return;
+
+        var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
+
+        if (accountObj != null)
         {
-          mainMenu.Items.Insert( mainMenu.Items.Count - 2, speckleMenu );
-        } ) );
-        MenuHasBeenAdded = true;
-        loadTimer.Stop();
-      }
-      catch ( Exception err )
+          accountObj.Toggle();
+          isGlobalOn = accountObj.ProvideAccount;
+        }
+        else
+        {
+          var docObject = new GlobalRhinoComputeComponent();
+          doc.AddObject(docObject, false);
+          docObject.Toggle();
+          isGlobalOn = docObject.ProvideAccount;
+        }
+      },
+      null, true, isGlobalOn);
+
+      // Check if it should be checked or not
+      speckleMenu.DropDown.Opened += (x, e) => 
       {
-        Debug.WriteLine( err.Message );
-      }
+        var doc = Grasshopper.Instances.ActiveCanvas.Document;
+        if (doc == null)
+          return;
+        var accountObj = GlobalRhinoComputeComponent.GetFromDocument(doc);
+
+        if(accountObj != null)
+        {
+          isGlobalOn = accountObj.ProvideAccount;
+        }
+
+        if (toolStripItem != null) 
+          toolStripItem.Checked = isGlobalOn;
+      };
+
+      speckleMenu.DropDown.Items.Add(toolStripItem);
+      /////////////////////////////////////////////////////
+
+      docEditor.MainMenuStrip.ResumeLayout(false);
+      docEditor.MainMenuStrip.PerformLayout();
     }
   }
 }

@@ -69,8 +69,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\GhReceiverClientAttributes.cs" />
     <Compile Include="BaseComponents\GhReceiverCoreClient.cs" />
+    <Compile Include="Attributes\GhSenderClientAttributes.cs" />
     <Compile Include="BaseComponents\GhSenderCoreClient.cs" />
+    <Compile Include="BaseComponents\TimerPlus.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ExtendedComponents\GlobalRhinoComputeComponent.cs" />
+    <Compile Include="Management\CreateAccount.cs" />
     <Compile Include="UserDataUtils\GetApplicationId.cs" />
     <Compile Include="Parameters\Param_SpeckleStreams.cs" />
     <Compile Include="UserDataUtils\QuerySpeckleObjectComponent.cs" />
@@ -138,6 +145,7 @@
     <None Include="Resources\CreateUserData.png" />
     <None Include="Resources\csv.png" />
     <None Include="Resources\ExpandUserData.png" />
+    <None Include="Resources\AddAccount.png" />
     <Content Include="Resources\GenericIcon.png" />
     <None Include="Resources\GenericIconXS.png" />
   </ItemGroup>
