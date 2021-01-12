@@ -5,9 +5,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
@@ -19,9 +17,7 @@ using Grasshopper.Kernel.Special;
 using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
 using SpeckleGrasshopper.ExtendedComponents;
-using SpeckleGrasshopper.Management;
 using SpeckleGrasshopper.Properties;
-using SpecklePopup;
 
 namespace SpeckleGrasshopper
 {
@@ -1313,10 +1309,9 @@ namespace SpeckleGrasshopper
 
     public override Guid ComponentGuid
     {
-      get { return new Guid("{e66e6873-ddcd-4089-93ff-75ae09f8ada3}"); }
+      get { return new Guid( "{e66e6873-ddcd-4089-93ff-75ae09f8ada3}" ); }
     }
-
   }
-}
 
+}
 

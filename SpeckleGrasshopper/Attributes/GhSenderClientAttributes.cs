@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Linq;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
@@ -11,6 +12,7 @@ namespace SpeckleGrasshopper.Attributes
     private Rectangle BaseRectangle;
     private Rectangle StreamIdBounds;
     private Rectangle StreamNameBounds;
+    private Rectangle ClientNameBounds;
     private Rectangle PushStreamButtonRectangle;
 
     public GhSenderClientAttributes(GhSenderClient component) : base(component)
@@ -24,7 +26,7 @@ namespace SpeckleGrasshopper.Attributes
       BaseRectangle = GH_Convert.ToRectangle(Bounds);
       StreamIdBounds = new Rectangle((int)(BaseRectangle.X + (BaseRectangle.Width - 120) * 0.5), BaseRectangle.Y - 25, 120, 20);
       StreamNameBounds = new Rectangle(StreamIdBounds.X, BaseRectangle.Y - 50, 120, 20);
-
+      ClientNameBounds = new Rectangle(StreamIdBounds.X, BaseRectangle.Y - 75, 120, 20);
       PushStreamButtonRectangle = new Rectangle((int)(BaseRectangle.X + (BaseRectangle.Width - 30) * 0.5), BaseRectangle.Y + BaseRectangle.Height, 30, 30);
 
       if (Base.ManualMode)
@@ -40,9 +42,9 @@ namespace SpeckleGrasshopper.Attributes
 
       if (channel == GH_CanvasChannel.Objects)
       {
-        var myStyle = new GH_PaletteStyle(ColorTranslator.FromHtml(Base.EnableRemoteControl ? "#147DE9" : "#B3B3B3"), ColorTranslator.FromHtml("#FFFFFF"), ColorTranslator.FromHtml(Base.EnableRemoteControl ? "#ffffff" : "#4C4C4C"));
+        var myStyle = new GH_PaletteStyle(System.Drawing.ColorTranslator.FromHtml(Base.EnableRemoteControl ? "#147DE9" : "#B3B3B3"), System.Drawing.ColorTranslator.FromHtml("#FFFFFF"), System.Drawing.ColorTranslator.FromHtml(Base.EnableRemoteControl ? "#ffffff" : "#4C4C4C"));
 
-        var myTransparentStyle = new GH_PaletteStyle(Color.FromArgb(0, 0, 0, 0));
+        var myTransparentStyle = new GH_PaletteStyle(System.Drawing.Color.FromArgb(0, 0, 0, 0));
 
         var streamIdCapsule = GH_Capsule.CreateTextCapsule(box: StreamIdBounds, textbox: StreamIdBounds, palette: Base.EnableRemoteControl ? GH_Palette.Black : GH_Palette.Transparent, text: Base.EnableRemoteControl ? "Remote Controller" : "ID: " + (Base.Client != null ? Base.Client.StreamId : "error"), highlight: 0, radius: 5);
         streamIdCapsule.Render(graphics, myStyle);
@@ -51,6 +53,12 @@ namespace SpeckleGrasshopper.Attributes
         var streamNameCapsule = GH_Capsule.CreateTextCapsule(box: StreamNameBounds, textbox: StreamNameBounds, palette: GH_Palette.Black, text: "(S) " + Base.NickName, highlight: 0, radius: 5);
         streamNameCapsule.Render(graphics, myStyle);
         streamNameCapsule.Dispose();
+
+        var dotCom = Base.Client.BaseUrl.Split('.').Last();
+        var clintNickname = Base.Client.BaseUrl.Replace("https://", "").Replace("." + dotCom, "");
+        var clientNameCapsule = GH_Capsule.CreateTextCapsule(box: ClientNameBounds, textbox: ClientNameBounds, palette: GH_Palette.Black, text: clintNickname, highlight: 0, radius: 5);
+        clientNameCapsule.Render(graphics, myStyle);
+        clientNameCapsule.Dispose();
 
         if (Base.ManualMode)
         {
@@ -76,4 +84,3 @@ namespace SpeckleGrasshopper.Attributes
 
   }
 }
-
