@@ -861,7 +861,7 @@ namespace SpeckleGrasshopper
 
     public override Guid ComponentGuid
     {
-      get { return new Guid("{e35c72a5-9e1c-4d79-8879-a9d6db8006fb}"); }
+      get { return new Guid( "{e35c72a5-9e1c-4d79-8879-a9d6db8006fb}" ); }
     }
   }
-};
+}

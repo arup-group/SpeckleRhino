@@ -16,7 +16,6 @@ namespace SpeckleGrasshopper.Attributes
     Rectangle StreamNameBounds;
     private Rectangle ClientNameBounds;
     Rectangle PauseButtonBounds;
-
     public GhReceiverClientAttributes(GhReceiverClient component) : base(component)
     {
       Base = component;
@@ -31,7 +30,7 @@ namespace SpeckleGrasshopper.Attributes
       ClientNameBounds = new Rectangle(StreamIdBounds.X, BaseRectangle.Y - 75, 120, 20);
       PauseButtonBounds = new Rectangle((int)(BaseRectangle.X + (BaseRectangle.Width - 30) * 0.5), BaseRectangle.Y + BaseRectangle.Height, 30, 30);
 
-      var newBaseRectangle = new Rectangle(BaseRectangle.X, BaseRectangle.Y, BaseRectangle.Width, BaseRectangle.Height + 33);
+      Rectangle newBaseRectangle = new Rectangle(BaseRectangle.X, BaseRectangle.Y, BaseRectangle.Width, BaseRectangle.Height + 33);
       Bounds = newBaseRectangle;
     }
 
@@ -40,9 +39,9 @@ namespace SpeckleGrasshopper.Attributes
       base.Render(canvas, graphics, channel);
       if (channel == GH_CanvasChannel.Objects)
       {
-        var myStyle = new GH_PaletteStyle(ColorTranslator.FromHtml("#B3B3B3"), ColorTranslator.FromHtml("#FFFFFF"), ColorTranslator.FromHtml("#4C4C4C"));
+        GH_PaletteStyle myStyle = new GH_PaletteStyle(System.Drawing.ColorTranslator.FromHtml("#B3B3B3"), System.Drawing.ColorTranslator.FromHtml("#FFFFFF"), System.Drawing.ColorTranslator.FromHtml("#4C4C4C"));
 
-        var myTransparentStyle = new GH_PaletteStyle(Color.FromArgb(0, 0, 0, 0));
+        GH_PaletteStyle myTransparentStyle = new GH_PaletteStyle(System.Drawing.Color.FromArgb(0, 0, 0, 0));
 
         var streamIdCapsule = GH_Capsule.CreateTextCapsule(box: StreamIdBounds, textbox: StreamIdBounds, palette: GH_Palette.Transparent, text: "ID: " + Base.StreamId, highlight: 0, radius: 5);
         streamIdCapsule.Render(graphics, myStyle);
@@ -83,6 +82,5 @@ namespace SpeckleGrasshopper.Attributes
       }
       return base.RespondToMouseDown(sender, e);
     }
-
   }
 };

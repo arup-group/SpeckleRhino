@@ -588,7 +588,7 @@ namespace SpeckleGrasshopper
 
     protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
     {
-      pManager.AddGenericParameter( "Project", "Pr", "Optional input for either a Project type (get it from ListMyProject component) or a string for the ProjectId", GH_ParamAccess.tree );
+      pManager.AddGenericParameter("Project", "Pr", "Optional input for either a Project type (get it from ListMyProject component) or a string for the ProjectId", GH_ParamAccess.tree);
       pManager[0].Optional = true;
       pManager.AddGenericParameter("A", "A", "A is for Apple", GH_ParamAccess.tree);
       pManager[1].Optional = true;
@@ -646,7 +646,7 @@ namespace SpeckleGrasshopper
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Ignoring Project ID");
       }
 
-      
+
       Account _account = null;
       string streamId = null;
       if (AccountRequired)
@@ -1142,7 +1142,7 @@ namespace SpeckleGrasshopper
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid client, check account credentials");
         return;
       }
-      
+
       var updateResult = Client.StreamUpdateAsync(Client.StreamId, updateStream).Result;
 
       Log += updateResult.Message;
@@ -1309,9 +1309,8 @@ namespace SpeckleGrasshopper
 
     public override Guid ComponentGuid
     {
-      get { return new Guid( "{e66e6873-ddcd-4089-93ff-75ae09f8ada3}" ); }
+      get { return new Guid("{e66e6873-ddcd-4089-93ff-75ae09f8ada3}"); }
     }
   }
-
 }
 
