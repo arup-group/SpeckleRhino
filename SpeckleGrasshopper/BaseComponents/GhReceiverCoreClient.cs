@@ -144,8 +144,11 @@ namespace SpeckleGrasshopper
           account = GhSenderClient.SignInWindow();
         }
 
-        RestApi = account.RestApi;
-        AuthToken = account.Token;
+        if(account != null)
+        {
+          RestApi = account.RestApi;
+          AuthToken = account.Token;
+        }
       }
 
       StreamIdChanger = new System.Timers.Timer(1000)
@@ -553,9 +556,12 @@ namespace SpeckleGrasshopper
       if (account == null)
       {
         account = GhSenderClient.SignInWindow();
-        RestApi = account.RestApi;
-        AuthToken = account.Token;
-        UpdateClientWrap(RestApi, AuthToken, DA);
+        if(account !=null)
+        {
+          RestApi = account.RestApi;
+          AuthToken = account.Token;
+          UpdateClientWrap(RestApi, AuthToken, DA);
+        }
       }
 
       if (Paused)

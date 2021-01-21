@@ -161,7 +161,8 @@ namespace SpeckleGrasshopper
         if (_account == null)
         {
           account = SignInWindow();
-          InitializeClient(account);
+          if(account != null)
+            InitializeClient(account);
         }
       }
       else
@@ -220,14 +221,18 @@ namespace SpeckleGrasshopper
       helper.Owner = Rhino.RhinoApp.MainWindowHandle();
 
       signInWindow.ShowDialog();
-
+      
       if (signInWindow.AccountListBox.SelectedIndex != -1)
       {
         return signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
       }
+      else if (signInWindow.hasAccounts)
+      {
+        return signInWindow.accounts.First();
+      }
       else
       {
-        throw new Exception("Account selection failed.");
+        return null;
       }
     }
 
