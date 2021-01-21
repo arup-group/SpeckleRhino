@@ -161,7 +161,8 @@ namespace SpeckleGrasshopper
         if (_account == null)
         {
           account = SignInWindow();
-          InitializeClient(account);
+          if(account != null)
+            InitializeClient(account);
         }
       }
       else
@@ -225,7 +226,7 @@ namespace SpeckleGrasshopper
       {
         return signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
       }
-      else if(signInWindow.hasAccounts)
+      else if (signInWindow.hasAccounts)
       {
         return signInWindow.accounts.First();
       }

@@ -144,8 +144,11 @@ namespace SpeckleGrasshopper
           account = GhSenderClient.SignInWindow();
         }
 
-        RestApi = account.RestApi;
-        AuthToken = account.Token;
+        if(account != null)
+        {
+          RestApi = account.RestApi;
+          AuthToken = account.Token;
+        }
       }
 
       StreamIdChanger = new System.Timers.Timer(1000)
