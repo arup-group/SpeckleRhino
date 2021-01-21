@@ -553,9 +553,12 @@ namespace SpeckleGrasshopper
       if (account == null)
       {
         account = GhSenderClient.SignInWindow();
-        RestApi = account.RestApi;
-        AuthToken = account.Token;
-        UpdateClientWrap(RestApi, AuthToken, DA);
+        if(account !=null)
+        {
+          RestApi = account.RestApi;
+          AuthToken = account.Token;
+          UpdateClientWrap(RestApi, AuthToken, DA);
+        }
       }
 
       if (Paused)
