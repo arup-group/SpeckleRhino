@@ -55,6 +55,8 @@ jobs:
         run: git submodule update --init
         
       - name: Setup Node.js environment
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         uses: actions/setup-node@v1.4.3
         
       - name: build SpeckleView
