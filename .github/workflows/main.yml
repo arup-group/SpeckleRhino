@@ -14,13 +14,13 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: windows-latest
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # if version is of form v1.2.3-cx extracts 1.2.3 
       - name: get version from tag
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           echo $env:GITHUB_REF
           $env:GITHUB_REF -match "refs/tags/v(?<content>.*)-cx"
@@ -33,12 +33,16 @@ jobs:
         with:
           token: ${{secrets.github_token}}
           
-      - name: set full version number
+      - name: set full version number        
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           $FULL_VERSION = "$env:SPECKLE_VERSION.$env:BUILD_NUMBER"
           echo "::set-env name=FULL_VERSION::$FULL_VERSION"
       
       - name: Print full version number
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: echo "Version is $env:FULL_VERSION"
       
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -64,6 +68,8 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.1
           
       - name: set grasshopper version in .dll
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           $infopath = 'SpeckleGrasshopper/Properties/AssemblyInfo.cs'
           $assembinfo = (Get-Content $infopath)
@@ -75,6 +81,8 @@ jobs:
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
           
       - name: set grasshopper version in gh info
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           $infopath = 'SpeckleGrasshopper/UserDataUtils/SpeckleGrasshopperInfo.cs'
           $assembinfo = (Get-Content $infopath)
@@ -86,6 +94,8 @@ jobs:
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
         
       - name: set rhino version # do we need to change AssemblyInformationalVersion as well?
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           $infopath = 'SpeckleRhinoPlugin/SpeckleWinR6/Properties/AssemblyInfo.cs'
           $assembinfo = (Get-Content $infopath)
