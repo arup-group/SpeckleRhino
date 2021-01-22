@@ -63,12 +63,18 @@ jobs:
         run: cd SpeckleView; npm install; npm run build
         
       - name: Setup NuGet.exe for use with actions
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         uses: NuGet/setup-nuget@v1.0.2
         
       - name: nuget restore
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: nuget restore SpeckleRhino.sln
         
       - name: setup-msbuild
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         uses: microsoft/setup-msbuild@v1.0.1
           
       - name: set grasshopper version in .dll
@@ -111,24 +117,35 @@ jobs:
           Out-File -FilePath $infopath -InputObject $replacedassembinfo
       
       - name: msbuild 
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: msbuild SpeckleRhino.sln -p:Configuration=Release
         
       - name: rename gha
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: Rename-Item -Path SpeckleGrasshopper/bin/Release/SpeckleGrasshopper.gha -NewName SpeckleGrasshopper-cx.gha
         
       - name: copy gha to rhi folder
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: Copy-Item SpeckleGrasshopper/bin/Release/SpeckleGrasshopper-cx.gha -Destination SpeckleRhinoPlugin/SpeckleWinR6/bin/Release
           
       - name: zip rhp
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: Compress-Archive -DestinationPath SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip -Path SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/*
         
       - name: change from zip to rhi
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: Rename-Item -Path SpeckleRhinoPlugin/SpeckleWinR6/bin/Release/SpeckleWinR6-cx.zip -NewName SpeckleWinR6-cx.rhi
           
       - name: Get release
         id: get_release
         uses: bruceadams/get-release@v1.2.1
         env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload rhi # includes gha as well
