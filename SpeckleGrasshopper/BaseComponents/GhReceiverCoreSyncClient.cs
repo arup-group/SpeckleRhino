@@ -80,13 +80,13 @@ namespace SpeckleGrasshopper.BaseComponents
         if (!DA.GetData(1, ref streamId))
           return;
 
-         string querry = null;
-        DA.GetData(2, ref querry);
+         string query_ = null;
+        DA.GetData(2, ref query_);
 
         var task = Task.Run(() =>
         {
           var Client = new SpeckleApiClient(account.RestApi, true);
-          var query = querry == null || querry.Equals("") ? null : querry;
+          var query = query_ == null || query_.Equals("") ? null : query_;
           var getStream = Client.StreamGetAsync(streamId, query).Result;
           Client.Stream = getStream.Resource;
 
