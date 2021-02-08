@@ -62,9 +62,20 @@ namespace SpeckleGrasshopper.Management
 
       string query = "";
 
-      if(Fields.Count > 0)
+      if(types.Count > 0)
       {
-        query += $"fields={string.Join(",", Fields)}";
+        query += $"type={string.Join(",", types)}";
+      }
+
+      if (Layers.Count > 0)
+      {
+        query += $"&layers={string.Join(",", Layers)}";
+      }
+
+
+      if (Fields.Count > 0)
+      {
+        query += $"&fields={string.Join(",", Fields)}";
       }
 
       if(Conditions.Count > 0)

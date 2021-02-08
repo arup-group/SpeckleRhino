@@ -80,16 +80,26 @@ namespace SpeckleGrasshopper.BaseComponents
         if (!DA.GetData(1, ref streamId))
           return;
 
-         string query_ = null;
+        string query_ = null;
         DA.GetData(2, ref query_);
+        string[] layers = new string[] { };
+
+        if (query_.Contains("layers"))
+        {
+          var l = query_.Split(new string[] { "layers=" }, StringSplitOptions.RemoveEmptyEntries).Last();
+          l = l.Split('&').First();
+          layers = l.Split(',');
+          query_ = query_.Replace($"layers={string.Join(",", layers)}", "");
+        }
 
         var task = Task.Run(() =>
         {
           var Client = new SpeckleApiClient(account.RestApi, true);
+          Client.AuthToken = account.Token;
           var query = query_ == null || query_.Equals("") ? null : query_;
-          var getStream = Client.StreamGetAsync(streamId, query).Result;
+          var getStream = Client.StreamGetAsync(streamId, null).Result;
           Client.Stream = getStream.Resource;
-
+          var choosenLayers = Client.Stream.Layers.Where(x => layers.Contains(x.Name));
           // filter out the objects that were not in the cache and still need to be retrieved
           var payload = Client.Stream.Objects.Where(o => o.Type == "Placeholder").Select(obj => obj._id).ToArray();
 
@@ -106,11 +116,17 @@ namespace SpeckleGrasshopper.BaseComponents
             var subPayload = payload.Skip(i).Take(maxObjRequestCount).ToArray();
 
             // get it sync as this is always execed out of the main thread
-            var res = Client.ObjectGetBulkAsync(subPayload, "omit=displayValue").Result;
+            var query1 = query;// + "&omit=displayValue";
+            var res = Client.ObjectGetBulkAsync(subPayload, query1).Result;
 
             // put them in our bucket
             newObjects.AddRange(res.Resources);
           }
+
+          if (layers.Length > 0)
+            newObjects = FilterFromLayers(newObjects, choosenLayers);
+          newObjects = FilterEmpty(newObjects);
+
 
           foreach (var obj in newObjects)
           {
@@ -145,6 +161,38 @@ namespace SpeckleGrasshopper.BaseComponents
       {
         DA.SetDataList(0, data);
       }
+    }
+
+    public List<SpeckleObject> FilterEmpty(List<SpeckleObject> objects)
+    {
+      var myObjects = new List<SpeckleObject>();
+
+      for (int i = 0; i < objects.Count; i++)
+      {
+        var obj = objects[i];
+        var IsString = obj.GetType().GetProperty("Type")?.GetValue(obj).Equals("String");
+        var IsEmpty = objects[i].GetType().GetProperty("Value")?.GetValue(obj).Equals("You do not have permissions to view this object");
+
+        if (IsString != null && IsString.Value == true && IsEmpty != null && IsEmpty == true)
+        {
+          continue;
+        }
+
+        myObjects.Add(objects[i]);
+      }
+
+      return myObjects;
+    }
+
+    public List<SpeckleObject> FilterFromLayers(List<SpeckleObject> objects, IEnumerable<Layer> layers)
+    {
+      var myObjects = new List<SpeckleObject>();
+
+      foreach (var layer in layers)
+      {
+        myObjects.AddRange(objects.Skip((int)layer.StartIndex).Take((int)layer.ObjectCount));
+      }
+      return myObjects;
     }
 
     /// <summary>
