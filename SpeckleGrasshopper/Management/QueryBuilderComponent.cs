@@ -67,12 +67,6 @@ namespace SpeckleGrasshopper.Management
         query += $"type={string.Join(",", types)}";
       }
 
-      if (Layers.Count > 0)
-      {
-        query += $"&layers={string.Join(",", Layers)}";
-      }
-
-
       if (Fields.Count > 0)
       {
         query += $"&fields={string.Join(",", Fields)}";
@@ -91,6 +85,12 @@ namespace SpeckleGrasshopper.Management
         query += $"&sort={string.Join(",", Sort)}";
       }
 
+      // Add this in the end with a Questionmark so it will not be part of the Mongo query.
+      // We will manage it on the client side
+      if (Layers.Count > 0)
+      {
+        query += $"?layers={string.Join(",", Layers)}";
+      }
 
       DA.SetData(0, query);
 

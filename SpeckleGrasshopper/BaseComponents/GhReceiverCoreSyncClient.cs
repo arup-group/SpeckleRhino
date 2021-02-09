@@ -84,12 +84,12 @@ namespace SpeckleGrasshopper.BaseComponents
         DA.GetData(2, ref query_);
         string[] layers = new string[] { };
 
-        if (query_.Contains("layers"))
+        if (query_ != null && query_.Contains("layers"))
         {
-          var l = query_.Split(new string[] { "layers=" }, StringSplitOptions.RemoveEmptyEntries).Last();
+          var l = query_.Split(new string[] { "?layers=" }, StringSplitOptions.RemoveEmptyEntries).Last();
           l = l.Split('&').First();
           layers = l.Split(',');
-          query_ = query_.Replace($"layers={string.Join(",", layers)}", "");
+          query_ = query_.Replace($"?layers={string.Join(",", layers)}", "");
         }
 
         var task = Task.Run(() =>
@@ -109,6 +109,9 @@ namespace SpeckleGrasshopper.BaseComponents
           // list to hold them into
           var newObjects = new List<SpeckleObject>();
 
+          if (layers.Length > 0)
+            payload = FilterFromLayers(payload, choosenLayers).ToArray();
+
           // jump in `maxObjRequestCount` increments through the payload array
           for (int i = 0; i < payload.Length; i += maxObjRequestCount)
           {
@@ -123,8 +126,7 @@ namespace SpeckleGrasshopper.BaseComponents
             newObjects.AddRange(res.Resources);
           }
 
-          if (layers.Length > 0)
-            newObjects = FilterFromLayers(newObjects, choosenLayers);
+          
           newObjects = FilterEmpty(newObjects);
 
 
@@ -184,9 +186,9 @@ namespace SpeckleGrasshopper.BaseComponents
       return myObjects;
     }
 
-    public List<SpeckleObject> FilterFromLayers(List<SpeckleObject> objects, IEnumerable<Layer> layers)
+    public List<T> FilterFromLayers<T>(IEnumerable<T> objects, IEnumerable<Layer> layers)
     {
-      var myObjects = new List<SpeckleObject>();
+      var myObjects = new List<T>();
 
       foreach (var layer in layers)
       {
