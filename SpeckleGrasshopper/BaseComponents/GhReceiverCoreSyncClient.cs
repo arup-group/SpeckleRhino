@@ -119,7 +119,7 @@ namespace SpeckleGrasshopper.BaseComponents
             var subPayload = payload.Skip(i).Take(maxObjRequestCount).ToArray();
 
             // get it sync as this is always execed out of the main thread
-            var query1 = query;// + "&omit=displayValue";
+            var query1 = query + "&omit=displayValue";
             var res = Client.ObjectGetBulkAsync(subPayload, query1).Result;
 
             // put them in our bucket
@@ -173,7 +173,7 @@ namespace SpeckleGrasshopper.BaseComponents
       {
         var obj = objects[i];
         var IsString = obj.GetType().GetProperty("Type")?.GetValue(obj).Equals("String");
-        var IsEmpty = objects[i].GetType().GetProperty("Value")?.GetValue(obj).Equals("You do not have permissions to view this object");
+        var IsEmpty = obj.GetType().GetProperty("Value")?.GetValue(obj).Equals("You do not have permissions to view this object");
 
         if (IsString != null && IsString.Value == true && IsEmpty != null && IsEmpty == true)
         {
