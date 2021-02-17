@@ -14,7 +14,7 @@ namespace SpeckleGrasshopper.Management
     public QueryBuilderComponent()
       : base("Query Builder", "QB",
           "Build a query string for use on the receiver component",
-          "Speckle", "Management")
+          "Speckle", "Beta")
     {
     }
 

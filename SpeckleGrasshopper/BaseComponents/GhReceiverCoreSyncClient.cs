@@ -26,7 +26,7 @@ namespace SpeckleGrasshopper.BaseComponents
     public GhReceiverCoreSyncClient()
       : base("Data Receiver Sync", "DRS",
           "Receives data from Speckle Synchronously.",
-          "Speckle", "   Server")
+          "Speckle", "Beta")
     {
     }
 
