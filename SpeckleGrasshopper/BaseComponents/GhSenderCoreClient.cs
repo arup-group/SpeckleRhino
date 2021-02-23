@@ -18,6 +18,7 @@ using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
 using SpeckleGrasshopper.ExtendedComponents;
 using SpeckleGrasshopper.Properties;
+using SpeckleGrasshopper.Utilities;
 
 namespace SpeckleGrasshopper
 {
@@ -1215,13 +1216,7 @@ namespace SpeckleGrasshopper
           continue;
         }
 
-        Layer myLayer = new Layer(
-            myParam.NickName,
-            myParam.InstanceGuid.ToString(),
-            GetParamTopology(myParam),
-            myParam.VolatileDataCount,
-            startIndex,
-            count);
+        var myLayer = SpeckleUtilities.CreateLayer(startIndex, count, myParam);
 
         layers.Add(myLayer);
         startIndex += myParam.VolatileDataCount;
@@ -1229,16 +1224,6 @@ namespace SpeckleGrasshopper
         c++;
       }
       return layers;
-    }
-
-    public string GetParamTopology(IGH_Param param)
-    {
-      string topology = "";
-      foreach (Grasshopper.Kernel.Data.GH_Path mypath in param.VolatileData.Paths)
-      {
-        topology += mypath.ToString(false) + "-" + param.VolatileData.get_Branch(mypath).Count + " ";
-      }
-      return topology;
     }
 
     bool IGH_VariableParameterComponent.CanInsertParameter(GH_ParameterSide side, int index)
@@ -1292,16 +1277,6 @@ namespace SpeckleGrasshopper
 
     void IGH_VariableParameterComponent.VariableParameterMaintenance()
     {
-    }
-
-    public string GetTopology(IGH_Param param)
-    {
-      string topology = "";
-      foreach (Grasshopper.Kernel.Data.GH_Path mypath in param.VolatileData.Paths)
-      {
-        topology += mypath.ToString(false) + "-" + param.VolatileData.get_Branch(mypath).Count + " ";
-      }
-      return topology;
     }
 
     protected override System.Drawing.Bitmap Icon
