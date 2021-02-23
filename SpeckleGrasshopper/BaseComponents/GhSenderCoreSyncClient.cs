@@ -197,7 +197,7 @@ namespace SpeckleGrasshopper.BaseComponents
           }
 
           // create placeholders for stream update payload
-          List<SpeckleObject> placeholders = new List<SpeckleObject>();
+          var placeholders = new List<SpeckleObject>();
 
           foreach (var obj in persistedObjects)
           {
@@ -286,6 +286,7 @@ namespace SpeckleGrasshopper.BaseComponents
             //  });
             //}
           })
+          .ContinueWith(_ => Thread.Sleep(100))
           .ContinueWith(_ => Log);
           
 
