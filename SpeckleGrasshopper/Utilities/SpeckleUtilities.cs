@@ -55,11 +55,43 @@ namespace SpeckleGrasshopper.Utilities
       for (int i = 0; i < parameters.Count; i++)
       {
         var myParam = parameters[i];
-        Layer myLayer = SpeckleUtilities.CreateLayer(startIndex, i, myParam);
+        var layer = CreateLayer(startIndex, i, myParam);
         startIndex += myParam.VolatileDataCount;
+        layers.Add(layer);
       }
       return layers;
     }
 
+    /// <summary>
+    /// Iterates through parameters and get all their data as objects. This can be used later for converting them to SpeckleObjects.
+    /// </summary>
+    /// <param name="Parameters"></param>
+    /// <returns></returns>
+    public static List<object> GetData(List<IGH_Param> Parameters)
+    {
+      var data = new List<object>();
+
+      foreach (IGH_Param myParam in Parameters)
+      {
+        foreach (object o in myParam.VolatileData.AllData(false))
+        {
+          data.Add(o);
+        }
+      }
+
+      data = data.Select(obj =>
+      {
+        try
+        {
+          return obj.GetType().GetProperty("Value").GetValue(obj);
+        }
+        catch
+        {
+          return null;
+        }
+      }).ToList();
+
+      return data;
+    }
   }
 }

@@ -92,16 +92,132 @@ namespace SpeckleGrasshopper.BaseComponents
 
         var task = Task.Run(() =>
         {
+          // Client is King
+          var Client = new SpeckleApiClient(account.RestApi, true);
+          // Need to use the stream Id
+          Client.Stream = new SpeckleStream { StreamId = streamId };
+          Client.StreamId = streamId;
+          Client.AuthToken = account.Token;
+
           // Get Inputs
           var bucketLayers = GetLayers();
-          var bucketObjects = new List<object>();
+          var bucketObjects = GetData();
+
+          // Convert them
+          var convertedObjects = Converter.Serialise(bucketLayers).ToList();
+          LocalContext.PruneExistingObjects(convertedObjects, Client.BaseUrl);
+          
+          // Create placeholders
+          var persistedObjects = new List<SpeckleObject>();
+
+          if (convertedObjects.Count(obj => obj.Type == "Placeholder") != convertedObjects.Count)
+          {
+            // create the update payloads
+            int count = 0;
+            var objectUpdatePayloads = new List<List<SpeckleObject>>();
+            long totalBucketSize = 0;
+            long currentBucketSize = 0;
+            var currentBucketObjects = new List<SpeckleObject>();
+            var allObjects = new List<SpeckleObject>();
+            foreach (SpeckleObject convertedObject in convertedObjects)
+            {
+
+              //if (count++ % 100 == 0)
+              //{
+              //  Message = "Converted " + count + " objects out of " + convertedObjects.Count() + ".";
+              //}
+
+              // size checking & bulk object creation payloads creation
+              long size = Converter.getBytes(convertedObject).Length;
+              currentBucketSize += size;
+              totalBucketSize += size;
+              currentBucketObjects.Add(convertedObject);
+
+              // Object is too big?
+              if (size > 2e6)
+              {
+
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "This stream contains a super big object. These will fail. Sorry for the bad error message - we're working on improving this.");
+
+                currentBucketObjects.Remove(convertedObject);
+              }
+
+              if (currentBucketSize > 5e5) // restrict max to ~500kb; should it be user config? anyway these functions should go into core. at one point. 
+              {
+                Debug.WriteLine("Reached payload limit. Making a new one, current  #: " + objectUpdatePayloads.Count);
+                objectUpdatePayloads.Add(currentBucketObjects);
+                currentBucketObjects = new List<SpeckleObject>();
+                currentBucketSize = 0;
+              }
+            }
+
+            // add in the last bucket
+            if (currentBucketObjects.Count > 0)
+            {
+              objectUpdatePayloads.Add(currentBucketObjects);
+            }
+
+            //Debug.WriteLine("Finished, payload object update count is: " + objectUpdatePayloads.Count + " total bucket size is (kb) " + totalBucketSize / 1000);
+
+            // create bulk object creation tasks
+            int k = 0;
+            List<ResponseObject> responses = new List<ResponseObject>();
+            foreach (var payload in objectUpdatePayloads)
+            {
+              // Message = String.Format("{0}/{1}", k++, objectUpdatePayloads.Count);
+
+              try
+              {
+                var objResponse = Client.ObjectCreateAsync(payload, 60000).Result;
+                responses.Add(objResponse);
+                persistedObjects.AddRange(objResponse.Resources);
+
+                int m = 0;
+                foreach (var oL in payload)
+                {
+                  oL._id = objResponse.Resources[m++]._id;
+                }
+
+                // push sent objects in the cache non-blocking
+                Task.Run(() =>
+                {
+                  foreach (var oL in payload)
+                  {
+                    if (oL.Type != "Placeholder")
+                    {
+                      LocalContext.AddSentObject(oL, Client.BaseUrl);
+                    }
+                  }
+                });
+
+              }
+              catch (Exception err)
+              {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, err.Message);
+                //return;
+              }
+            }
+          }
+          else
+          {
+            persistedObjects = convertedObjects;
+          }
+
+          // create placeholders for stream update payload
+          List<SpeckleObject> placeholders = new List<SpeckleObject>();
+
+          foreach (var obj in persistedObjects)
+          {
+            placeholders.Add(new SpecklePlaceholder() { _id = obj._id });
+          }
 
           // Need to fill in with placeholders
-          var updateStream = new SpeckleStream();
-
-          // Need to use the stream Id
-          var Client = new SpeckleApiClient(account.RestApi, true);
-          Client.Stream = new SpeckleStream { StreamId = streamId };
+          var updateStream = new SpeckleStream()
+          {
+            Layers = bucketLayers,
+            Name = NickName,
+            Objects = placeholders
+          };
 
           // Need to pass the log to the output
           string Log = "";
@@ -185,15 +301,27 @@ namespace SpeckleGrasshopper.BaseComponents
     /// <returns></returns>
     public List<Layer> GetLayers()
     {
+      var parameters = GetDataParameters();
+      return SpeckleUtilities.GetLayers(parameters);
+    }
+
+    private List<IGH_Param> GetDataParameters()
+    {
       var parameters = new List<IGH_Param>();
       for (var i = 3; i < Params.Input.Count; i++)
       {
         var myParam = Params.Input[i];
         parameters.Add(myParam);
       }
-      return SpeckleUtilities.GetLayers(parameters);
+
+      return parameters;
     }
 
+    public List<object> GetData()
+    {
+      var parameters = GetDataParameters();
+      return SpeckleUtilities.GetData(parameters);
+    }
 
     public bool CanInsertParameter(GH_ParameterSide side, int index)
     {
