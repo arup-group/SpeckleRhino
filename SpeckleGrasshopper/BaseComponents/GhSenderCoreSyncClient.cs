@@ -94,7 +94,7 @@ namespace SpeckleGrasshopper.BaseComponents
         {
           // Client is King
           var Client = new SpeckleApiClient(account.RestApi, true);
-          // Need to use the stream Id
+          // Need to use the stream Id, Check if stream doesn't exist and assign otherwise create one
           Client.Stream = new SpeckleStream { StreamId = streamId };
           Client.StreamId = streamId;
           Client.AuthToken = account.Token;
@@ -104,29 +104,22 @@ namespace SpeckleGrasshopper.BaseComponents
           var bucketObjects = GetData();
 
           // Convert them
-          var convertedObjects = Converter.Serialise(bucketLayers).ToList();
+          var convertedObjects = Converter.Serialise(bucketObjects).ToList();
           LocalContext.PruneExistingObjects(convertedObjects, Client.BaseUrl);
-          
+
           // Create placeholders
           var persistedObjects = new List<SpeckleObject>();
 
           if (convertedObjects.Count(obj => obj.Type == "Placeholder") != convertedObjects.Count)
           {
             // create the update payloads
-            int count = 0;
             var objectUpdatePayloads = new List<List<SpeckleObject>>();
             long totalBucketSize = 0;
             long currentBucketSize = 0;
             var currentBucketObjects = new List<SpeckleObject>();
             var allObjects = new List<SpeckleObject>();
-            foreach (SpeckleObject convertedObject in convertedObjects)
+            foreach (var convertedObject in convertedObjects)
             {
-
-              //if (count++ % 100 == 0)
-              //{
-              //  Message = "Converted " + count + " objects out of " + convertedObjects.Count() + ".";
-              //}
-
               // size checking & bulk object creation payloads creation
               long size = Converter.getBytes(convertedObject).Length;
               currentBucketSize += size;
@@ -222,60 +215,83 @@ namespace SpeckleGrasshopper.BaseComponents
           // Need to pass the log to the output
           string Log = "";
 
-          // Is this stream part of a Project?
-
-          var myTask = Client.StreamUpdateAsync(Client.StreamId, updateStream).ContinueWith(x =>
-        {
-          if (x.Status == TaskStatus.RanToCompletion)
+          // Always create history
+          return Client.StreamCloneAsync(streamId)
+          .ContinueWith(clone =>
           {
-            var response = x.Result;
-            Log += response.Message;
-          }
-        })
-        .ContinueWith(y =>
-        {
-          if (project != null)
+            Client.Stream?.Children?.Add(clone.Result.Clone.StreamId);
+          })
+          // Let's update the Stream
+          .ContinueWith(_ =>
           {
-            if (!project.Streams.Contains(Client.StreamId))
+            return Client.StreamUpdateAsync(Client.StreamId, updateStream)
+            .ContinueWith(x =>
             {
-              project.Streams.Add(Client.StreamId);
-              Client.ProjectUpdateAsync(project._id, project);
-            }
-            else
-            {
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Stream is already part of the project!");
-            }
-          }
-          else if (project != null)
-          {
-            Client.ProjectGetAllAsync().ContinueWith
-            (tsk =>
-            {
-              if (tsk.Result.Success == true)
+              if (x.Status == TaskStatus.RanToCompletion)
               {
-                var projectReceived = tsk.Result.Resources.Where(x => x._id == project._id).FirstOrDefault();
-                if (projectReceived != null)
-                {
-                  if (!projectReceived.Streams.Contains(Client.StreamId))
-                  {
-                    projectReceived.Streams.Add(Client.StreamId);
-                    Client.ProjectUpdateAsync(projectReceived._id, projectReceived);
-                  }
-                  else
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Stream is already part of the project!");
-                }
-                else
-                {
-                  AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "ProjectId didn't match any known projects");
-                }
+                var response = x.Result;
+                Log += response.Message;
               }
-
             });
-          }
-        });
+          })
+          // Let's make sure the Stream is included in the Project
+          .ContinueWith(_ =>
+          {
+            if (project != null)
+            {
+              if (!project.Streams.Contains(Client.StreamId))
+              {
+                project.Streams.Add(Client.StreamId);
+                // We need to make this with Continue
+                Client.ProjectUpdateAsync(project._id, project);
+                Log += "Adding stream to Project\n";
+              }
+              else
+              {
+                var msg = "Stream is already part of the project!";
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, msg);
+                Log += msg + "\n";
+              }
+            }
+            // This workflow was in the case you were providing a string id to specify the project instead of a Project Object
+            //else if (project != null)
+            //{
+            //  Client.ProjectGetAllAsync().ContinueWith
+            //  (tsk =>
+            //  {
+            //    if (tsk.Result.Success == true)
+            //    {
+            //      var projectReceived = tsk.Result.Resources.Where(x => x._id == project._id).FirstOrDefault();
+            //      if (projectReceived != null)
+            //      {
+            //        if (!projectReceived.Streams.Contains(Client.StreamId))
+            //        {
+            //          projectReceived.Streams.Add(Client.StreamId);
+            //          Client.ProjectUpdateAsync(projectReceived._id, projectReceived);
+            //        }
+            //        else
+            //        {
+            //          var msg = "Stream is already part of the project!";
+            //          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, msg);
+            //          Log += msg + "\n";
+            //        }
+            //      }
+            //      else
+            //      {
+            //        var msg = "ProjectId didn't match any known projects";
+            //        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, msg);
+            //        Log += msg + "\n";
+            //      }
+            //    }
+            //  });
+            //}
+          })
+          .ContinueWith(_ => Log);
+          
 
 
-          return Log;
+          // Is this stream part of a Project?
+          //return 
         });
 
         TaskList.Add(task);
