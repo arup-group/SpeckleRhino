@@ -286,16 +286,14 @@ namespace SpeckleGrasshopper.BaseComponents
             //  });
             //}
           })
+          // I added a bit of a delay to allow the server to refresh
           .ContinueWith(_ => Thread.Sleep(100))
           .ContinueWith(_ => Log);
           
-
-
-          // Is this stream part of a Project?
-          //return 
         });
 
         TaskList.Add(task);
+        return;
       }
 
       if (source.IsCancellationRequested)
