@@ -102,10 +102,11 @@ namespace SpeckleGrasshopper.Management
           return;
         }
         var newProjects = tsk.Result.Resources.ToList();
+        newProjects = newProjects.Where(x => !x.Deleted ?? true).ToList();
         var notUpdated = UserProjects.Select(x => x._id).SequenceEqual(newProjects.Select(x => x._id));
 
         if (!notUpdated){
-          UserProjects = tsk.Result.Resources.ToList();
+          UserProjects = newProjects;
           Rhino.RhinoApp.MainApplicationWindow.Invoke(ExpireComponent);
         }
       });
