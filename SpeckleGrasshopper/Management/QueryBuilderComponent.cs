@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
@@ -64,7 +64,8 @@ namespace SpeckleGrasshopper.Management
 
       if(types.Count > 0)
       {
-        query += $"type={string.Join(",", types)}";
+        var typesWrapped = types.Select(x => $"/\\b{x}\\b/");
+        query += $"type={string.Join(",", typesWrapped)}";
       }
 
       if (Fields.Count > 0)
