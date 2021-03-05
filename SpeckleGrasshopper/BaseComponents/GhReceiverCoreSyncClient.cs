@@ -9,6 +9,8 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
+using System.Windows.Forms;
+using SpeckleGrasshopper.Utilities;
 
 namespace SpeckleGrasshopper.BaseComponents
 {
@@ -49,6 +51,16 @@ namespace SpeckleGrasshopper.BaseComponents
       pManager.AddTextParameter("Query", "Q", "Query to simplify the call to get data from the stream", GH_ParamAccess.item);
       pManager[2].Optional = true;
     }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+
+      SpeckleUtilities.AddClientRelatedSubMenus(menu, Client);
+
+    }
+
+    
 
     public override bool Write(GH_IWriter writer)
     {

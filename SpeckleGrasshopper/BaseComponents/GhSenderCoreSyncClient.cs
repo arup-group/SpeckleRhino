@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Rhino.Geometry;
@@ -53,6 +54,14 @@ namespace SpeckleGrasshopper.BaseComponents
       pManager[4].Optional = true;
       pManager.AddGenericParameter("C", "C", "C is for Car", GH_ParamAccess.tree);
       pManager[5].Optional = true;
+    }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+
+      SpeckleUtilities.AddClientRelatedSubMenus(menu, Client);
+
     }
 
     /// <summary>
@@ -310,7 +319,7 @@ namespace SpeckleGrasshopper.BaseComponents
           // I added a bit of a delay to allow the server to refresh
           .ContinueWith(_ => Thread.Sleep(100))
           .ContinueWith(_ => Log);
-          
+
         });
 
         TaskList.Add(task);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Grasshopper.Kernel;
 using SpeckleCore;
 
@@ -92,6 +93,39 @@ namespace SpeckleGrasshopper.Utilities
       }).ToList();
 
       return data;
+    }
+
+    static public void AddClientRelatedSubMenus(ToolStripDropDown menu, SpeckleApiClient Client)
+    {
+      var streamId = Client?.Stream?.StreamId;
+      GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + streamId + ") to clipboard.", (sender, e) =>
+      {
+        if (streamId != null)
+        {
+          System.Windows.Clipboard.SetText(streamId);
+        }
+      });
+
+      var RestApi = Client?.BaseUrl;
+      GH_DocumentObject.Menu_AppendItem(menu, "View stream.", (sender, e) =>
+      {
+        if (streamId == null)
+        {
+          return;
+        }
+
+        System.Diagnostics.Process.Start(RestApi.Replace("/api/v1", "/#/view").Replace("/api", "/#/view") + @"/" + streamId);
+      });
+
+      GH_DocumentObject.Menu_AppendItem(menu, "(API) View stream data.", (sender, e) =>
+      {
+        if (streamId == null)
+        {
+          return;
+        }
+
+        System.Diagnostics.Process.Start(RestApi + @"/streams/" + streamId);
+      });
     }
   }
 }
