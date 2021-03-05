@@ -25,19 +25,16 @@ using SpeckleGrasshopper.Attributes;
 
 namespace SpeckleGrasshopper
 {
-  public class GhReceiverClient : GH_Component, IGH_VariableParameterComponent
+  public class GhReceiverClient : GH_Component, IGH_VariableParameterComponent, ISpeckleClient
   {
     Account account;
     string AuthToken;
     string RestApi;
-    public string StreamId;
     public bool Deserialize = true;
-    public bool Paused = false;
     public bool Expired = false;
     private bool AccountRequired = false;
     public GH_Document Document;
 
-    public SpeckleApiClient Client;
     List<Layer> Layers;
     List<SpeckleObject> SpeckleObjects;
     List<object> ConvertedObjects;
@@ -49,6 +46,13 @@ namespace SpeckleGrasshopper
     System.Timers.Timer StreamIdChanger;
 
     public bool IsUpdating = false;
+    
+    // Interface
+    public string StreamID { get; set; }
+    public bool Paused { get; set; }
+    public SpeckleApiClient Client { get; set; }
+
+
     public override GH_Exposure Exposure => GH_Exposure.primary;
     public GhReceiverClient()
       : base("Data Receiver", "DR",
@@ -61,7 +65,7 @@ namespace SpeckleGrasshopper
 
     public override void CreateAttributes()
     {
-      m_attributes = new GhReceiverClientAttributes(this);
+      m_attributes = new SpeckleClientAttributes(this, this);
     }
 
     public override bool Write(GH_IWriter writer)
@@ -100,7 +104,7 @@ namespace SpeckleGrasshopper
           ms.Seek(0, SeekOrigin.Begin);
           Client = (SpeckleApiClient)new BinaryFormatter().Deserialize(ms);
 
-          StreamId = Client.StreamId;
+          StreamID = Client.StreamId;
           AuthToken = Client.AuthToken;
           RestApi = Client.BaseUrl;
 
@@ -161,7 +165,7 @@ namespace SpeckleGrasshopper
 
     private async void ChangeStreamId(object sender, System.Timers.ElapsedEventArgs e)
     {
-      Debug.WriteLine("Changing streams to {0}.", StreamId);
+      Debug.WriteLine("Changing streams to {0}.", StreamID);
       UpdateClient(RestApi, AuthToken, null);
     }
 
@@ -174,8 +178,8 @@ namespace SpeckleGrasshopper
     {
       Client = new SpeckleApiClient(RestApi, true);
       InitReceiverEventsAndGlobals();
-      if (StreamId != null)
-        await Client.IntializeReceiver(StreamId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
+      if (StreamID != null)
+        await Client.IntializeReceiver(StreamID, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), AuthToken);
     }
 
     public void InitReceiverEventsAndGlobals()
@@ -206,10 +210,10 @@ namespace SpeckleGrasshopper
       //Menu_AppendItem(menu, "Specify Account", OnAddAccount, true, AccountRequired);
       //Menu_AppendSeparator(menu);
 
-      GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamId + ") to clipboard.", (sender, e) =>
+      GH_DocumentObject.Menu_AppendItem(menu, "Copy streamId (" + StreamID + ") to clipboard.", (sender, e) =>
        {
-         if (StreamId != null)
-           System.Windows.Clipboard.SetText(StreamId);
+         if (StreamID != null)
+           System.Windows.Clipboard.SetText(StreamID);
        });
 
       GH_DocumentObject.Menu_AppendSeparator(menu);
@@ -225,34 +229,34 @@ namespace SpeckleGrasshopper
 
       GH_DocumentObject.Menu_AppendSeparator(menu);
 
-      GH_DocumentObject.Menu_AppendItem(menu, "Force refresh.", (sender, e) =>
+      GH_DocumentObject.Menu_AppendItem(menu, "Force refresh.", (EventHandler)((sender, e) =>
      {
-       if (StreamId != null)
+       if (this.StreamID != null)
        {
          UpdateGlobal();
-         ExpireSolution(true);
+         base.ExpireSolution(true);
        }
-     });
+     }));
 
       GH_DocumentObject.Menu_AppendSeparator(menu);
 
-      GH_DocumentObject.Menu_AppendItem(menu, "View stream.", (sender, e) =>
+      GH_DocumentObject.Menu_AppendItem(menu, "View stream.", (EventHandler)((sender, e) =>
       {
-        if (StreamId == null) return;
-        System.Diagnostics.Process.Start(RestApi.Replace("/api/v1", "/#/view").Replace("/api", "/#/view") + @"/" + StreamId);
-      });
+        if (this.StreamID == null) return;
+        System.Diagnostics.Process.Start((string)(RestApi.Replace("/api/v1", "/#/view").Replace("/api", "/#/view") + @"/" + this.StreamID));
+      }));
 
-      GH_DocumentObject.Menu_AppendItem(menu, "(API) View stream data.", (sender, e) =>
+      GH_DocumentObject.Menu_AppendItem(menu, "(API) View stream data.", (EventHandler)((sender, e) =>
       {
-        if (StreamId == null) return;
-        System.Diagnostics.Process.Start(RestApi + @"/streams/" + StreamId);
-      });
+        if (this.StreamID == null) return;
+        System.Diagnostics.Process.Start((string)(RestApi + @"/streams/" + this.StreamID));
+      }));
 
-      GH_DocumentObject.Menu_AppendItem(menu, "(API) View objects data online.", (sender, e) =>
+      GH_DocumentObject.Menu_AppendItem(menu, "(API) View objects data online.", (EventHandler)((sender, e) =>
       {
-        if (StreamId == null) return;
-        System.Diagnostics.Process.Start(RestApi + @"/streams/" + StreamId + @"/objects?omit=displayValue,base64");
-      });
+        if (this.StreamID == null) return;
+        System.Diagnostics.Process.Start((string)(RestApi + @"/streams/" + this.StreamID + @"/objects?omit=displayValue,base64"));
+      }));
 
       if (Client == null || Client.Stream == null) return;
 
@@ -465,7 +469,7 @@ namespace SpeckleGrasshopper
 
     public virtual void UpdateMeta()
     {
-      var result = Client.StreamGetAsync(StreamId, "fields=name,layers").Result;
+      var result = Client.StreamGetAsync(StreamID, "fields=name,layers").Result;
 
       NickName = result.Resource.Name;
       Layers = result.Resource.Layers.ToList();
@@ -573,18 +577,18 @@ namespace SpeckleGrasshopper
       string inputId = null;
       DA.GetData(0, ref inputId);
 
-      if (inputId == null && StreamId == null)
+      if (inputId == null && StreamID == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Both id is null");
         return;
       }
 
-      if (inputId != StreamId)
+      if (inputId != StreamID)
       {
         Client?.Dispose(true);
         Client = null;
 
-        StreamId = inputId;
+        StreamID = inputId;
 
         StreamIdChanger.Start();
         return;
@@ -869,5 +873,6 @@ namespace SpeckleGrasshopper
     {
       get { return new Guid( "{e35c72a5-9e1c-4d79-8879-a9d6db8006fb}" ); }
     }
+
   }
 }

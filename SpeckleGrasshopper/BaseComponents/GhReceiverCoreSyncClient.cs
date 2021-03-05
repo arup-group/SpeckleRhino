@@ -8,11 +8,16 @@ using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using SpeckleCore;
+using SpeckleGrasshopper.Attributes;
 
 namespace SpeckleGrasshopper.BaseComponents
 {
-  public class GhReceiverCoreSyncClient : GH_TaskCapableComponent<List<SpeckleObject>>
+  public class GhReceiverCoreSyncClient : GH_TaskCapableComponent<List<SpeckleObject>>, ISpeckleClient
   {
+    public SpeckleApiClient Client { get; set; }
+
+    public bool Paused { get; set; } = false;
+
     /// <summary>
     /// Initializes a new instance of the TaskCapableMultiThread class.
     /// </summary>
@@ -28,6 +33,10 @@ namespace SpeckleGrasshopper.BaseComponents
           "Receives data from Speckle Synchronously.",
           "Speckle", "Beta")
     {
+    }
+    public override void CreateAttributes()
+    {
+      m_attributes = new SpeckleClientAttributes(this, this, false);
     }
 
     /// <summary>
@@ -76,9 +85,18 @@ namespace SpeckleGrasshopper.BaseComponents
         if (!DA.GetData(0, ref account))
           return;
 
-        string streamId = null;
-        if (!DA.GetData(1, ref streamId))
+        object dataFromStreamInput = null;
+        if (!DA.GetData(1, ref dataFromStreamInput))
           return;
+
+        dataFromStreamInput = dataFromStreamInput.GetType().GetProperty("Value").GetValue(dataFromStreamInput);
+
+        SpeckleStream speckleStream = null;
+        string streamId = null;
+        if (dataFromStreamInput is SpeckleStream ss)
+          speckleStream = ss;
+        else if (dataFromStreamInput is string s)
+          streamId = s;
 
         string query_ = null;
         DA.GetData(2, ref query_);
@@ -94,11 +112,20 @@ namespace SpeckleGrasshopper.BaseComponents
 
         var task = Task.Run(() =>
         {
-          var Client = new SpeckleApiClient(account.RestApi, true);
+          Client = new SpeckleApiClient(account.RestApi, true);
           Client.AuthToken = account.Token;
           var query = query_ == null || query_.Equals("") ? null : query_;
-          var getStream = Client.StreamGetAsync(streamId, null).Result;
-          Client.Stream = getStream.Resource;
+
+          if (streamId != null)
+          {
+            var getStream = Client.StreamGetAsync(streamId, null).Result;
+            Client.Stream = getStream.Resource;
+          }
+          else
+          {
+            var getStream = Client.StreamGetAsync(speckleStream.StreamId, null).Result;
+            Client.Stream = getStream.Resource;
+          }
           var choosenLayers = Client.Stream.Layers.Where(x => layers.Contains(x.Name));
           // filter out the objects that were not in the cache and still need to be retrieved
           var payload = Client.Stream.Objects.Where(o => o.Type == "Placeholder").Select(obj => obj._id).ToArray();

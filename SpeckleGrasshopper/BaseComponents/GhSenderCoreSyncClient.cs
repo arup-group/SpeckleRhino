@@ -8,12 +8,16 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Rhino.Geometry;
 using SpeckleCore;
+using SpeckleGrasshopper.Attributes;
 using SpeckleGrasshopper.Utilities;
 
 namespace SpeckleGrasshopper.BaseComponents
 {
-  public class GhSenderCoreSyncClient : GH_TaskCapableComponent<string>, IGH_VariableParameterComponent
+  public class GhSenderCoreSyncClient : GH_TaskCapableComponent<string>, IGH_VariableParameterComponent, ISpeckleClient
   {
+    public SpeckleApiClient Client { get; set; }
+
+    public bool Paused { get; set; } = false;
 
     /// <summary>
     /// Initializes a new instance of the TaskCapableMultiThread class.
@@ -61,9 +65,7 @@ namespace SpeckleGrasshopper.BaseComponents
 
     public override void CreateAttributes()
     {
-      // Use this extracting an interface because omg
-      //m_attributes = new GhSenderClientAttributes(this);
-      base.CreateAttributes();
+      m_attributes = new SpeckleClientAttributes(this, this, false);
     }
 
     /// <summary>
@@ -83,9 +85,19 @@ namespace SpeckleGrasshopper.BaseComponents
         Account account = null;
         if (!DA.GetData(0, ref account))
           return;
-        string streamId = "";
-        if (!DA.GetData(1, ref streamId))
+        object dataFromStreamInput = null;
+        if (!DA.GetData(1, ref dataFromStreamInput))
           return;
+
+        dataFromStreamInput = dataFromStreamInput.GetType().GetProperty("Value").GetValue(dataFromStreamInput);
+
+        SpeckleStream speckleStream = null;
+        string streamId = null;
+        if (dataFromStreamInput is SpeckleStream ss)
+          speckleStream = ss;
+        else if (dataFromStreamInput is string s)
+          streamId = s;
+
         Project project = null;
         DA.GetData(2, ref project);
         var optionProject = project == null;
@@ -93,11 +105,20 @@ namespace SpeckleGrasshopper.BaseComponents
         var task = Task.Run(() =>
         {
           // Client is King
-          var Client = new SpeckleApiClient(account.RestApi, true);
+          Client = new SpeckleApiClient(account.RestApi, true);
           // Need to use the stream Id, Check if stream doesn't exist and assign otherwise create one
-          Client.Stream = new SpeckleStream { StreamId = streamId };
-          Client.StreamId = streamId;
           Client.AuthToken = account.Token;
+          if (streamId != null)
+          {
+            var getStream = Client.StreamGetAsync(streamId, null).Result;
+            Client.Stream = getStream.Resource;// new SpeckleStream { StreamId = streamId };
+            Client.StreamId = streamId;
+          }
+          else
+          {
+            Client.Stream = speckleStream;
+            Client.StreamId = speckleStream.StreamId;
+          }
 
           // Get Inputs
           var bucketLayers = GetLayers();
