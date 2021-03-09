@@ -94,6 +94,13 @@ namespace SpeckleGrasshopper.Utilities
 
       return data;
     }
+    static public void AddExpireSolution(ToolStripDropDown menu, GH_Component component)
+    {
+      GH_DocumentObject.Menu_AppendItem(menu, "Force refresh", (sender, e) =>
+      {
+        component.ExpireSolution(true);
+      });
+    }
 
     static public void AddClientRelatedSubMenus(ToolStripDropDown menu, SpeckleApiClient Client)
     {
@@ -113,7 +120,6 @@ namespace SpeckleGrasshopper.Utilities
         {
           return;
         }
-
         System.Diagnostics.Process.Start(RestApi.Replace("/api/v1", "/#/view").Replace("/api", "/#/view") + @"/" + streamId);
       });
 
@@ -123,8 +129,16 @@ namespace SpeckleGrasshopper.Utilities
         {
           return;
         }
-
         System.Diagnostics.Process.Start(RestApi + @"/streams/" + streamId);
+      });
+
+      GH_DocumentObject.Menu_AppendItem(menu, "(API) View objects data online.", (sender, e) =>
+      {
+        if (streamId == null)
+        {
+          return;
+        }
+        System.Diagnostics.Process.Start(RestApi + @"/streams/" + streamId + @"/objects?omit=displayValue,base64");
       });
     }
   }

@@ -117,10 +117,14 @@ namespace SpeckleGrasshopper.BaseComponents
           Client = new SpeckleApiClient(account.RestApi, true);
           // Need to use the stream Id, Check if stream doesn't exist and assign otherwise create one
           Client.AuthToken = account.Token;
+          var Document = OnPingDocument();
+
+          var res = Client.IntializeSender(account.Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).Result;
+
           if (streamId != null)
           {
             var getStream = Client.StreamGetAsync(streamId, null).Result;
-            Client.Stream = getStream.Resource;// new SpeckleStream { StreamId = streamId };
+            Client.Stream = getStream.Resource;
             Client.StreamId = streamId;
           }
           else
@@ -238,7 +242,7 @@ namespace SpeckleGrasshopper.BaseComponents
           var updateStream = new SpeckleStream()
           {
             Layers = bucketLayers,
-            Name = NickName,
+            Name = Client.Stream.Name,
             Objects = placeholders
           };
 
@@ -316,10 +320,14 @@ namespace SpeckleGrasshopper.BaseComponents
             //  });
             //}
           })
+          .ContinueWith(_ =>
+            {
+              Client.BroadcastMessage("stream", Client.StreamId, new { eventType = "update-global" });
+            }
+            )
           // I added a bit of a delay to allow the server to refresh
           .ContinueWith(_ => Thread.Sleep(100))
           .ContinueWith(_ => Log);
-
         });
 
         TaskList.Add(task);
