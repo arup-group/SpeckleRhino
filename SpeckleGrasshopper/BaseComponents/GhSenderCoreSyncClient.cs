@@ -4,16 +4,21 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Rhino.Geometry;
 using SpeckleCore;
+using SpeckleGrasshopper.Attributes;
 using SpeckleGrasshopper.Utilities;
 
 namespace SpeckleGrasshopper.BaseComponents
 {
-  public class GhSenderCoreSyncClient : GH_TaskCapableComponent<string>, IGH_VariableParameterComponent
+  public class GhSenderCoreSyncClient : GH_TaskCapableComponent<string>, IGH_VariableParameterComponent, ISpeckleClient
   {
+    public SpeckleApiClient Client { get; set; }
+
+    public bool Paused { get; set; } = false;
 
     /// <summary>
     /// Initializes a new instance of the TaskCapableMultiThread class.
@@ -51,6 +56,14 @@ namespace SpeckleGrasshopper.BaseComponents
       pManager[5].Optional = true;
     }
 
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+
+      SpeckleUtilities.AddClientRelatedSubMenus(menu, Client);
+
+    }
+
     /// <summary>
     /// Registers all the output parameters for this component.
     /// </summary>
@@ -61,9 +74,7 @@ namespace SpeckleGrasshopper.BaseComponents
 
     public override void CreateAttributes()
     {
-      // Use this extracting an interface because omg
-      //m_attributes = new GhSenderClientAttributes(this);
-      base.CreateAttributes();
+      m_attributes = new SpeckleClientAttributes(this, this, false);
     }
 
     /// <summary>
@@ -83,9 +94,19 @@ namespace SpeckleGrasshopper.BaseComponents
         Account account = null;
         if (!DA.GetData(0, ref account))
           return;
-        string streamId = "";
-        if (!DA.GetData(1, ref streamId))
+        object dataFromStreamInput = null;
+        if (!DA.GetData(1, ref dataFromStreamInput))
           return;
+
+        dataFromStreamInput = dataFromStreamInput.GetType().GetProperty("Value").GetValue(dataFromStreamInput);
+
+        SpeckleStream speckleStream = null;
+        string streamId = null;
+        if (dataFromStreamInput is SpeckleStream ss)
+          speckleStream = ss;
+        else if (dataFromStreamInput is string s)
+          streamId = s;
+
         Project project = null;
         DA.GetData(2, ref project);
         var optionProject = project == null;
@@ -93,11 +114,24 @@ namespace SpeckleGrasshopper.BaseComponents
         var task = Task.Run(() =>
         {
           // Client is King
-          var Client = new SpeckleApiClient(account.RestApi, true);
+          Client = new SpeckleApiClient(account.RestApi, true);
           // Need to use the stream Id, Check if stream doesn't exist and assign otherwise create one
-          Client.Stream = new SpeckleStream { StreamId = streamId };
-          Client.StreamId = streamId;
           Client.AuthToken = account.Token;
+          var Document = OnPingDocument();
+
+          var res = Client.IntializeSender(account.Token, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString()).Result;
+
+          if (streamId != null)
+          {
+            var getStream = Client.StreamGetAsync(streamId, null).Result;
+            Client.Stream = getStream.Resource;
+            Client.StreamId = streamId;
+          }
+          else
+          {
+            Client.Stream = speckleStream;
+            Client.StreamId = speckleStream.StreamId;
+          }
 
           // Get Inputs
           var bucketLayers = GetLayers();
@@ -208,7 +242,7 @@ namespace SpeckleGrasshopper.BaseComponents
           var updateStream = new SpeckleStream()
           {
             Layers = bucketLayers,
-            Name = NickName,
+            Name = Client.Stream.Name,
             Objects = placeholders
           };
 
@@ -286,10 +320,14 @@ namespace SpeckleGrasshopper.BaseComponents
             //  });
             //}
           })
+          .ContinueWith(_ =>
+            {
+              Client.BroadcastMessage("stream", Client.StreamId, new { eventType = "update-global" });
+            }
+            )
           // I added a bit of a delay to allow the server to refresh
           .ContinueWith(_ => Thread.Sleep(100))
           .ContinueWith(_ => Log);
-          
         });
 
         TaskList.Add(task);

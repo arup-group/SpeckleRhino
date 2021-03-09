@@ -8,11 +8,18 @@ using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using SpeckleCore;
+using SpeckleGrasshopper.Attributes;
+using System.Windows.Forms;
+using SpeckleGrasshopper.Utilities;
 
 namespace SpeckleGrasshopper.BaseComponents
 {
-  public class GhReceiverCoreSyncClient : GH_TaskCapableComponent<List<SpeckleObject>>
+  public class GhReceiverCoreSyncClient : GH_TaskCapableComponent<List<SpeckleObject>>, ISpeckleClient
   {
+    public SpeckleApiClient Client { get; set; }
+
+    public bool Paused { get; set; } = false;
+
     /// <summary>
     /// Initializes a new instance of the TaskCapableMultiThread class.
     /// </summary>
@@ -29,6 +36,10 @@ namespace SpeckleGrasshopper.BaseComponents
           "Speckle", "Beta")
     {
     }
+    public override void CreateAttributes()
+    {
+      m_attributes = new SpeckleClientAttributes(this, this, false);
+    }
 
     /// <summary>
     /// Registers all the input parameters for this component.
@@ -39,6 +50,14 @@ namespace SpeckleGrasshopper.BaseComponents
       pManager.AddGenericParameter("Stream", "S", "Stream to get", GH_ParamAccess.item);
       pManager.AddTextParameter("Query", "Q", "Query to simplify the call to get data from the stream", GH_ParamAccess.item);
       pManager[2].Optional = true;
+    }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+
+      SpeckleUtilities.AddClientRelatedSubMenus(menu, Client);
+      SpeckleUtilities.AddExpireSolution(menu, this);
     }
 
     public override bool Write(GH_IWriter writer)
@@ -76,9 +95,18 @@ namespace SpeckleGrasshopper.BaseComponents
         if (!DA.GetData(0, ref account))
           return;
 
-        string streamId = null;
-        if (!DA.GetData(1, ref streamId))
+        object dataFromStreamInput = null;
+        if (!DA.GetData(1, ref dataFromStreamInput))
           return;
+
+        dataFromStreamInput = dataFromStreamInput.GetType().GetProperty("Value").GetValue(dataFromStreamInput);
+
+        SpeckleStream speckleStream = null;
+        string streamId = null;
+        if (dataFromStreamInput is SpeckleStream ss)
+          speckleStream = ss;
+        else if (dataFromStreamInput is string s)
+          streamId = s;
 
         string query_ = null;
         DA.GetData(2, ref query_);
@@ -91,14 +119,29 @@ namespace SpeckleGrasshopper.BaseComponents
           layers = l.Split(',');
           query_ = query_.Replace($"?layers={string.Join(",", layers)}", "");
         }
-
+        
         var task = Task.Run(() =>
         {
-          var Client = new SpeckleApiClient(account.RestApi, true);
-          Client.AuthToken = account.Token;
+          Client = new SpeckleApiClient(account.RestApi, true);
+          Message = "";
+          ClearRuntimeMessages();
+
+
           var query = query_ == null || query_.Equals("") ? null : query_;
-          var getStream = Client.StreamGetAsync(streamId, null).Result;
-          Client.Stream = getStream.Resource;
+          var strId = "";
+          if (streamId != null)
+          {
+            strId = streamId;
+          }
+          else
+          {
+            strId = speckleStream.StreamId;
+          }
+          var Document = OnPingDocument();
+
+          Client.IntializeReceiver(strId, Document.DisplayName, "Grasshopper", Document.DocumentID.ToString(), account.Token).Wait();
+          Client.OnWsMessage += OnWsMessage;
+
           var choosenLayers = Client.Stream.Layers.Where(x => layers.Contains(x.Name));
           // filter out the objects that were not in the cache and still need to be retrieved
           var payload = Client.Stream.Objects.Where(o => o.Type == "Placeholder").Select(obj => obj._id).ToArray();
@@ -126,7 +169,7 @@ namespace SpeckleGrasshopper.BaseComponents
             newObjects.AddRange(res.Resources);
           }
 
-          
+
           newObjects = FilterEmpty(newObjects);
 
 
@@ -195,6 +238,44 @@ namespace SpeckleGrasshopper.BaseComponents
         myObjects.AddRange(objects.Skip((int)layer.StartIndex).Take((int)layer.ObjectCount));
       }
       return myObjects;
+    }
+
+    public virtual void OnWsMessage(object source, SpeckleEventArgs e)
+    {
+      if (e.EventObject != null)
+        try
+        {
+          switch ((string)e.EventObject.args.eventType)
+          {
+            case "update-global":
+              try
+              {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Update available since " + DateTime.Now);
+                Message = "Outdated";
+              }
+              catch (Exception er)
+              {
+                //AddRuntimeMessage(GH_RuntimeMessageLevel.Error, er.StackTrace);
+              }
+              break;
+            case "update-meta":
+              //Message = "update-meta";
+              break;
+            case "update-name":
+              //Message = "update-name";
+              break;
+            case "update-children":
+              //Message = "update-children";
+              break;
+            default:
+              //Message = "something-else";
+              break;
+          }
+        }
+        catch (Exception ex)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToString());
+        }
     }
 
     /// <summary>
