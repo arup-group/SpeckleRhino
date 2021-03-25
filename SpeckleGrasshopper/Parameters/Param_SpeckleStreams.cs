@@ -37,6 +37,11 @@ namespace SpeckleGrasshopper.Parameters
   public class GH_SpeckleStream : GH_Goo<SpeckleStream>
   {
 
+    public GH_SpeckleStream()
+    {
+      Value = null;
+    }
+
     public GH_SpeckleStream(SpeckleStream speckleStream)
     {
       Value = speckleStream;
