@@ -217,24 +217,24 @@ namespace SpeckleGrasshopper
 
     public static Account SignInWindow()
     {
-      var signInWindow = new SpecklePopup.SignInWindow(true);
-      var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
-      helper.Owner = Rhino.RhinoApp.MainWindowHandle();
+      //var signInWindow = new SpecklePopup.SignInWindow(true);
+      //var helper = new System.Windows.Interop.WindowInteropHelper(signInWindow);
+      //helper.Owner = Rhino.RhinoApp.MainWindowHandle();
 
-      signInWindow.ShowDialog();
+      //signInWindow.ShowDialog();
       
-      if (signInWindow.AccountListBox.SelectedIndex != -1)
-      {
-        return signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
-      }
-      else if (signInWindow.hasAccounts)
-      {
-        return signInWindow.accounts.First();
-      }
-      else
-      {
-        return null;
-      }
+      //if (signInWindow.AccountListBox.SelectedIndex != -1)
+      //{
+      //  return signInWindow.accounts[signInWindow.AccountListBox.SelectedIndex];
+      //}
+      //else if (signInWindow.hasAccounts)
+      //{
+      //  return signInWindow.accounts.First();
+      //}
+      //else
+      //{
+      return null;
+      //}
     }
 
     private async void InitializeClient(Account account, string streamid = null)

@@ -20,7 +20,7 @@ using Rhino.DocObjects;
 using System.Windows;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using SpecklePopup;
+//using SpecklePopup;
 
 namespace SpeckleRhino
 {
@@ -275,13 +275,13 @@ namespace SpeckleRhino
       RhinoApp.InvokeOnUiThread( new Action( ( ) =>
       //Window.Dispatcher.Invoke( ( ) =>
       {
-        var signInWindow = new SpecklePopup.SignInWindow( true );
+        //var signInWindow = new SpecklePopup.SignInWindow( true );
 
-        var helper = new System.Windows.Interop.WindowInteropHelper( signInWindow );
-        helper.Owner = RhinoApp.MainWindowHandle();
+        //var helper = new System.Windows.Interop.WindowInteropHelper( signInWindow );
+        //helper.Owner = RhinoApp.MainWindowHandle();
 
-        signInWindow.ShowDialog();
-        NotifySpeckleFrame( "refresh-accounts", "", "" );
+        //signInWindow.ShowDialog();
+        //NotifySpeckleFrame( "refresh-accounts", "", "" );
       } ) );
     }
 

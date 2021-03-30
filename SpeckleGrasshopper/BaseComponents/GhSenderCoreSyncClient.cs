@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
+using Piwik.Tracker;
 using Rhino.Geometry;
 using SpeckleCore;
 using SpeckleGrasshopper.Attributes;
@@ -76,6 +80,23 @@ namespace SpeckleGrasshopper.BaseComponents
     {
       m_attributes = new SpeckleClientAttributes(this, this, false);
     }
+    private static readonly string PiwikBaseUrl = "https://arupdt.matomo.cloud/";
+    private static readonly int SiteId = 4;
+    string _internalDomain = "arup";
+
+    /**
+        * Perform a one-way hash of the input text.
+        **/
+    private static string ComputeSHA256Hash(string text)
+    {
+      using (var sha256 = new SHA256Managed())
+      {
+        byte[] _encodedText = Encoding.UTF8.GetBytes(text);
+        byte[] _hash = sha256.ComputeHash(_encodedText);
+        string _hashString = BitConverter.ToString(_hash);
+        return _hashString.Replace("-", "").ToLower(new CultureInfo("en-GB", false));
+      }
+    }
 
     /// <summary>
     /// This is the method that actually does the work.
@@ -86,6 +107,9 @@ namespace SpeckleGrasshopper.BaseComponents
       if (RunCount == 1)
       {
         source = new CancellationTokenSource(10000);
+        //PiwikTracker _piwikTracker = new PiwikTracker(SiteId, PiwikBaseUrl);
+        //_piwikTracker.SetUserId(ComputeSHA256Hash(Environment.UserName + "@" + _internalDomain + ".com"));
+        //_piwikTracker.DoTrackEvent("SpeckleGh", "SendSync" , "");
       }
 
       if (InPreSolve)
