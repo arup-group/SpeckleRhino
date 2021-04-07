@@ -61,8 +61,8 @@ namespace SpeckleGrasshopper.Management
       DA.SetDataList(0, UserStreams.Select(x => new GH_SpeckleStream(x)));
 
       Client.BaseUrl = Account.RestApi; Client.AuthToken = Account.Token;
-      Client.StreamsGetAllAsync("fields=streamId,name,description,parent,children,ancestors,tags,layers&isComputedResult=false&deleted=false").ContinueWith(tsk =>
-       {
+      Client.StreamsGetAllLeanAsync().ContinueWith(tsk =>
+      {
          if (tsk.Result.Success == false)
          {
            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, tsk.Result.Message);

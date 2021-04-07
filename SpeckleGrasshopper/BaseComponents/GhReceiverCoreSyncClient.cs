@@ -35,6 +35,8 @@ namespace SpeckleGrasshopper.BaseComponents
           "Receives data from Speckle Synchronously.",
           "Speckle", "Beta")
     {
+      SpeckleCore.SpeckleInitializer.Initialize();
+      SpeckleCore.LocalContext.Init();
     }
     public override void CreateAttributes()
     {
