@@ -127,10 +127,10 @@
       <Version>6.1.18037.13441</Version>
     </PackageReference>
     <PackageReference Include="SpecCxCore">
-      <Version>1.2.1</Version>
+      <Version>1.2.3</Version>
     </PackageReference>
     <PackageReference Include="SpecCxPopup">
-      <Version>1.2.0</Version>
+      <Version>1.2.2</Version>
     </PackageReference>
     <PackageReference Include="sqlite-net-pcl">
       <Version>1.5.231</Version>
