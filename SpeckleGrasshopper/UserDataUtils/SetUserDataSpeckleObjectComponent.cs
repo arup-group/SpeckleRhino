@@ -87,7 +87,7 @@ namespace SpeckleGrasshopper.UserDataUtils
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a dictionary. (IDictionary<string, object>)");
       }
 
-
+      speckleObject.GenerateHash();
       DA.SetData(0, speckleObject);
     }
 
