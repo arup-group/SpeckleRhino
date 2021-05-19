@@ -134,10 +134,11 @@ namespace SpeckleGrasshopper
 
       if (Client == null)
       {
-        Account account = null;
+        Account _account = null;
         try
         {
-          account = LocalContext.GetDefaultAccount();
+          _account = LocalContext.GetDefaultAccount();
+          account = _account;
         }
         catch (Exception err)
         {
@@ -560,12 +561,18 @@ namespace SpeckleGrasshopper
       if (account == null)
       {
         account = GhSenderClient.SignInWindow();
-        if(account !=null)
+        if(account != null)
         {
           RestApi = account.RestApi;
           AuthToken = account.Token;
           UpdateClientWrap(RestApi, AuthToken, DA);
         }
+      } else
+      {
+        if (Client == null)
+        {
+          UpdateClientWrap(RestApi, AuthToken, DA);
+        }        
       }
 
       if (Paused)
