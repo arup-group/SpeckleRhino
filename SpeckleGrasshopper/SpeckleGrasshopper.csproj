@@ -79,6 +79,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ExtendedComponents\GlobalRhinoComputeComponent.cs" />
+    <Compile Include="FileLogger.cs" />
     <Compile Include="Management\CreateAccount.cs" />
     <Compile Include="Management\QueryBuilderComponent.cs" />
     <Compile Include="UserDataUtils\GetApplicationId.cs" />
