@@ -86,7 +86,7 @@ namespace SpeckleGrasshopper.BaseComponents
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      FileLogger.Log($"{this.GetType().Name}::solve");
+      Logger.Log($"{this.GetType().Name}::solve");
       if (RunCount == 1)
       {
         source = new CancellationTokenSource(10000);
@@ -102,7 +102,7 @@ namespace SpeckleGrasshopper.BaseComponents
         if (!DA.GetData(1, ref dataFromStreamInput))
           return;
 
-        FileLogger.Log($"{this.GetType().Name}::solving");
+        Logger.Log($"{this.GetType().Name}::solving");
         dataFromStreamInput = dataFromStreamInput.GetType().GetProperty("Value").GetValue(dataFromStreamInput);
 
         SpeckleStream speckleStream = null;
@@ -126,7 +126,7 @@ namespace SpeckleGrasshopper.BaseComponents
         
         var task = Task.Run(() =>
         {
-          FileLogger.Log($"{this.GetType().Name}::runnnig task");
+          Logger.Log($"{this.GetType().Name}::runnnig task");
           Client = new SpeckleApiClient(account.RestApi, true);
           Message = "";
           ClearRuntimeMessages();
@@ -201,12 +201,12 @@ namespace SpeckleGrasshopper.BaseComponents
 
       if (source.IsCancellationRequested)
       {
-        FileLogger.Log($"{this.GetType().Name}::out of time");
+        Logger.Log($"{this.GetType().Name}::out of time");
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
       }
       else if (!GetSolveResults(DA, out var data))
       {
-        FileLogger.Log($"{this.GetType().Name}::not multithreaded");
+        Logger.Log($"{this.GetType().Name}::not multithreaded");
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithread");
       }
       else

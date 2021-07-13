@@ -79,7 +79,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ExtendedComponents\GlobalRhinoComputeComponent.cs" />
-    <Compile Include="FileLogger.cs" />
+    <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Management\CreateAccount.cs" />
     <Compile Include="Management\QueryBuilderComponent.cs" />
     <Compile Include="UserDataUtils\GetApplicationId.cs" />
@@ -87,6 +87,7 @@
     <Compile Include="UserDataUtils\QuerySpeckleObjectComponent.cs" />
     <Compile Include="UserDataUtils\QuerySpeckleObjectComponent_OBSOLETE.cs" />
     <Compile Include="Utilities\CollectionExtentions.cs" />
+    <Compile Include="Utilities\Environment.cs" />
     <Compile Include="Utilities\SpeckleUtilities.cs" />
     <Compile Include="Utilities\SpecklStreamExtentions.cs" />
     <Compile Include="Loader.cs" />

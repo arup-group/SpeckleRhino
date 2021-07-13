@@ -8,6 +8,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using SpeckleCore;
 using SpeckleGrasshopper.Properties;
+using SpeckleGrasshopper.Utilities;
 
 namespace SpeckleGrasshopper.Management
 {
@@ -53,7 +54,7 @@ namespace SpeckleGrasshopper.Management
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      FileLogger.Log($"{this.GetType().Name}::solve");
+      Logger.Log($"{this.GetType().Name}::solve");
       string restApi = "";
       if (!DA.GetData(0, ref restApi))
         return;
@@ -61,7 +62,7 @@ namespace SpeckleGrasshopper.Management
       if (!DA.GetData(1, ref token))
         return;
 
-      FileLogger.Log($"{this.GetType().Name}::solving");
+      Logger.Log($"{this.GetType().Name}::solving");
       var account = new Account()
       {
         RestApi = restApi,

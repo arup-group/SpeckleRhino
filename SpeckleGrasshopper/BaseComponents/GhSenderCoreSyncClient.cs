@@ -83,7 +83,7 @@ namespace SpeckleGrasshopper.BaseComponents
     /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      FileLogger.Log($"{this.GetType().Name}::solve");
+      Logger.Log($"{this.GetType().Name}::solve");
       if (RunCount == 1)
       {
         source = new CancellationTokenSource(10000);
@@ -99,7 +99,7 @@ namespace SpeckleGrasshopper.BaseComponents
         if (!DA.GetData(1, ref dataFromStreamInput))
           return;
 
-        FileLogger.Log($"{this.GetType().Name}::solving");
+        Logger.Log($"{this.GetType().Name}::solving");
         dataFromStreamInput = dataFromStreamInput.GetType().GetProperty("Value").GetValue(dataFromStreamInput);
 
         SpeckleStream speckleStream = null;
@@ -115,7 +115,7 @@ namespace SpeckleGrasshopper.BaseComponents
 
         var task = Task.Run(() =>
         {
-          FileLogger.Log($"{this.GetType().Name}::runnnig task");
+          Logger.Log($"{this.GetType().Name}::runnnig task");
           // Client is King
           Client = new SpeckleApiClient(account.RestApi, true);
           // Need to use the stream Id, Check if stream doesn't exist and assign otherwise create one
@@ -256,17 +256,17 @@ namespace SpeckleGrasshopper.BaseComponents
           return Client.StreamCloneAsync(streamId)
           .ContinueWith(clone =>
           {
-            FileLogger.Log($"{this.GetType().Name}::continue 1");
+            Logger.Log($"{this.GetType().Name}::continue 1");
             Client.Stream?.Children?.Add(clone.Result.Clone.StreamId);
           })
           // Let's update the Stream
           .ContinueWith(_ =>
           {
-            FileLogger.Log($"{this.GetType().Name}::continue 2");
+            Logger.Log($"{this.GetType().Name}::continue 2");
             return Client.StreamUpdateAsync(Client.StreamId, updateStream)
             .ContinueWith(x =>
             {
-              FileLogger.Log($"{this.GetType().Name}::continue 2-1");
+              Logger.Log($"{this.GetType().Name}::continue 2-1");
               if (x.Status == TaskStatus.RanToCompletion)
               {
                 var response = x.Result;
@@ -277,7 +277,7 @@ namespace SpeckleGrasshopper.BaseComponents
           // Let's make sure the Stream is included in the Project
           .ContinueWith(_ =>
           {
-            FileLogger.Log($"{this.GetType().Name}::continue 3");
+            Logger.Log($"{this.GetType().Name}::continue 3");
             if (project != null)
             {
               if (!project.Streams.Contains(Client.StreamId))
@@ -329,7 +329,7 @@ namespace SpeckleGrasshopper.BaseComponents
           })
           .ContinueWith(_ =>
             {
-              FileLogger.Log($"{this.GetType().Name}::continue 4");
+              Logger.Log($"{this.GetType().Name}::continue 4");
               Client.BroadcastMessage("stream", Client.StreamId, new { eventType = "update-global" });
             }
             )
