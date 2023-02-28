@@ -342,17 +342,24 @@ namespace SpeckleGrasshopper.BaseComponents
         return;
       }
 
-      if (source.IsCancellationRequested)
+      try
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
+        if (source.IsCancellationRequested)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
+        }
+        else if (!GetSolveResults(DA, out var data))
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithread");
+        }
+        else
+        {
+          DA.SetData(0, data);
+        }
       }
-      else if (!GetSolveResults(DA, out var data))
+      catch(Exception ex)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithread");
-      }
-      else
-      {
-        DA.SetData(0, data);
+        Logger.Log(ex.Message);
       }
     }
 

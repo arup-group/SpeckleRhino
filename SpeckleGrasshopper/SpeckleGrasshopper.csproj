@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SpeckleGrasshopper</RootNamespace>
     <AssemblyName>SpeckleGrasshopper</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkProfile />
@@ -157,13 +157,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grasshopper" IncludeAssets="compile; build">
-      <Version>6.1.18037.13441</Version>
+      <Version>7.18.22124.3001</Version>
     </PackageReference>
     <PackageReference Include="RhinoCommon" IncludeAssets="compile; build">
-      <Version>6.1.18037.13441</Version>
+      <Version>7.18.22124.3001</Version>
     </PackageReference>
     <PackageReference Include="SpecCxCore">
-      <Version>1.2.4</Version>
+      <Version>1.2.8</Version>
     </PackageReference>
     <PackageReference Include="SpecCxPopup">
       <Version>1.2.3</Version>
